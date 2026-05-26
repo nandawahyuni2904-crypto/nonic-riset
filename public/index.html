@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nonic Riset</title>
+    <meta name="description" content="Tool riset produk viral Indonesia untuk menemukan trend produk, peluang affiliate, dan sinyal viral dari video pendek.">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <aside class="app-sidebar" id="appSidebar" aria-label="Dashboard navigation">
+      <div class="brand-mark">
+        <span>NR</span>
+        <strong>Nonic Riset</strong>
+      </div>
+      <nav class="side-nav">
+        <a href="#trending-now">Dashboard</a>
+        <a href="#emerging-products">Produk Naik</a>
+        <a href="#viral-discovery">Discovery</a>
+        <a href="#keyword-insights">Keyword</a>
+        <a href="#analytics">Analytics</a>
+      </nav>
+      <div class="sidebar-note">
+        <span>Daily research OS</span>
+        <p>Short-form signals, product intent, and affiliate-ready trend validation.</p>
+      </div>
+    </aside>
+    <main class="app-main">
+      <div class="shell">
+        <header class="app-header">
+          <nav class="topbar">
+            <button class="icon-button menu-toggle" id="menuToggle" type="button" aria-label="Open menu">☰</button>
+            <strong>Nonic Riset</strong>
+            <div class="top-status" aria-label="Connection status">
+              <span class="status-badge status-waiting" id="youtubeBadge">YouTube Checking</span>
+              <span class="status-badge status-waiting" id="shopeeBadge">Shopee Checking</span>
+              <span class="dev-badge" id="devBadge" hidden>Dev Mode</span>
+            </div>
+            <div class="status" id="status">Checking APIs...</div>
+            <button class="theme-toggle" id="themeToggle" type="button">Dark</button>
+          </nav>
+          <div class="hero-copy">
+            <p class="eyebrow">Product intelligence dashboard</p>
+            <h1>Temukan Produk Viral Siap Jual</h1>
+            <p class="lead">Pantau sinyal viral dari YouTube Shorts dan validasi peluang produk untuk Shopee Affiliate.</p>
+            <a class="hero-cta" href="#trending-now">Mulai Riset</a>
+          </div>
+        </header>
+
+        <section class="landing-panel" aria-label="Product trend finder overview">
+          <article>
+            <h2>Product trend finder</h2>
+            <p>Scan video pendek Indonesia untuk menemukan keyword produk yang sedang naik.</p>
+          </article>
+          <article>
+            <h2>Viral product discovery</h2>
+            <p>Deteksi momentum, hook, engagement, dan lifecycle sebelum trend terlalu ramai.</p>
+          </article>
+          <article>
+            <h2>Shopee trend analysis</h2>
+            <p>Siapkan validasi trends Shopee, TikTok Shop, dan konten review.</p>
+          </article>
+        </section>
+
+        <section class="research-panel search-hero" id="trending-now" aria-label="Product research">
+          <div class="mode-control segmented-control" role="radiogroup" aria-label="Mode pencarian">
+            <label><input type="radio" name="searchMode" value="auto" checked> Auto Discover</label>
+            <label><input type="radio" name="searchMode" value="manual"> Keyword</label>
+            <label><input type="radio" name="searchMode" value="category"> Kategori</label>
+          </div>
+          <label>
+            Keyword utama
+            <input id="productKeyword" type="text" value="gadget viral" placeholder="contoh: parfum pria, lampu tidur, waist bag">
+          </label>
+          <label id="categoryField" hidden>
+            Kategori produk
+            <select id="categorySelect"></select>
+          </label>
+          <button id="productSearch">Cari Peluang Viral</button>
+          <div class="search-assist">
+            <div>
+              <span>Quick categories</span>
+              <button type="button" data-category-jump="Dapur">Dapur</button>
+              <button type="button" data-category-jump="Gadget">Gadget</button>
+              <button type="button" data-category-jump="Fashion Wanita">Fashion</button>
+              <button type="button" data-category-jump="Alat Rumah Tangga">Rumah</button>
+            </div>
+            <div id="recentSearchChips">
+              <span>Recent searches</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="kpi-grid" id="analytics" aria-label="Ringkasan hasil">
+          <article class="kpi-card kpi-opportunity">
+            <div class="kpi-icon" aria-hidden="true">↗</div>
+            <span>Peluang</span>
+            <strong id="tiktokTotal">0</strong>
+            <p><em>Ready</em> Match terbaik</p>
+          </article>
+          <article class="kpi-card kpi-youtube">
+            <div class="kpi-icon" aria-hidden="true">▶</div>
+            <span>YT Viral</span>
+            <strong id="youtubeTotal">0</strong>
+            <p><em id="youtubeKpiStatus">Ready</em> Video ditemukan</p>
+          </article>
+          <article class="kpi-card kpi-shopee">
+            <div class="kpi-icon" aria-hidden="true">S</div>
+            <span>Trends Shopee</span>
+            <strong id="shopeeTotal">0</strong>
+            <p><em id="shopeeKpiStatus">Checking</em> Trends ditemukan</p>
+          </article>
+        </section>
+
+        <section class="research-status" id="researchStatus">
+          Siap mencari YT Viral dan trends Shopee.
+        </section>
+        <section class="onboarding-panel" id="onboardingPanel" aria-label="Tutorial awal">
+          <article>
+            <strong>1. Mulai dari keyword</strong>
+            <p>Masukkan produk seperti gelas aesthetic, rak sepatu, atau lampu sensor.</p>
+          </article>
+          <article>
+            <strong>2. Baca sinyal viral</strong>
+            <p>Prioritaskan HOT/WARM, engagement tinggi, upload baru, dan hook jualan kuat.</p>
+          </article>
+          <article>
+            <strong>3. Validasi produk</strong>
+            <p>Pakai quick action Shopee/TikTok/YouTube untuk cek kompetitor dan potensi trends.</p>
+          </article>
+        </section>
+        <section class="loading-panel" id="loadingPanel" hidden>
+          <div class="loading-topline">
+            <span class="spinner" aria-hidden="true"></span>
+            <strong id="progressLabel">Menyiapkan riset...</strong>
+            <span id="loadingEta">Estimasi 8 detik</span>
+          </div>
+          <div class="progress-track" aria-label="Progress loading">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </section>
+
+        <section class="action-panel" id="keyword-insights" aria-label="Aksi hasil riset">
+          <div class="mini-stat">
+            <span>Rata-rata views</span>
+            <strong id="avgViews">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Rata-rata engagement</span>
+            <strong id="avgEngagement">0%</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Keyword teratas</span>
+            <strong id="topKeyword">-</strong>
+          </div>
+          <button id="copyKeywords" type="button">Copy Keyword Viral</button>
+          <button id="copyExport" type="button">Copy Data</button>
+          <button id="clearCache" type="button">Clear Cache</button>
+          <button id="exportCsv" type="button">Export CSV</button>
+          <button id="exportJson" type="button">Export JSON</button>
+        </section>
+        <p class="cache-note" id="cacheStatus">Cache belum dicek.</p>
+        <p class="cache-note" id="quotaStatus">Quota belum dicek.</p>
+
+        <section class="filter-panel" aria-label="Filter dan urutan video">
+          <label><input id="filterHot" type="checkbox"> HOT only</label>
+          <label><input id="filterConfidence" type="checkbox"> Confidence &gt; 70</label>
+          <label><input id="filterViews" type="checkbox"> Views &gt; 100k</label>
+          <label><input id="filterRecent" type="checkbox"> Upload &lt; 30 hari</label>
+          <label>
+            Sort
+            <select id="sortMode">
+              <option value="confidence">Confidence tertinggi</option>
+              <option value="viral">Viral tercepat</option>
+              <option value="engagement">Engagement tertinggi</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="intel-panel" id="viral-discovery" aria-label="Trend intelligence">
+          <div class="intel-card">
+            <span>Peak posting hour</span>
+            <strong id="topUploadHour">-</strong>
+          </div>
+          <div class="intel-card">
+            <span>Top product angle</span>
+            <strong id="topProductAngle">-</strong>
+          </div>
+          <div class="intel-card">
+            <span>Trend farming channels</span>
+            <strong id="trendFarmingCount">0</strong>
+          </div>
+          <div class="intel-wide">
+            <div class="section-heading compact-heading">
+              <h2>Trend Timeline</h2>
+              <span id="timelineCount">0 slot</span>
+            </div>
+            <div class="timeline-bars" id="trendTimeline"></div>
+          </div>
+          <div class="intel-wide">
+            <div class="section-heading compact-heading">
+              <h2>Category Heatmap</h2>
+              <span id="heatmapCount">0 kategori</span>
+            </div>
+            <div class="heatmap-grid" id="categoryHeatmap"></div>
+          </div>
+        </section>
+
+        <section class="data-section emerging-section" id="emerging-products" aria-label="Produk Baru Naik">
+          <div class="section-heading">
+            <h2>Produk Baru Naik</h2>
+            <span id="emergingCount">Memuat...</span>
+          </div>
+          <div class="emerging-grid" id="emergingProducts">
+            <p class="empty-state">Mencari produk baru naik...</p>
+          </div>
+        </section>
+
+        <button class="insight-toggle" id="toggleKeywordInsight" type="button" hidden>Lihat insight keyword</button>
+
+        <div id="keywordInsightPanel" hidden>
+        <section class="keyword-panel" aria-label="Rekomendasi keyword">
+          <div class="section-heading">
+            <h2>Keyword Recommendation</h2>
+            <span id="keywordCount">0 keyword</span>
+          </div>
+          <div class="keyword-list" id="keywordRecommendations">
+            <p class="empty-state">Belum ada rekomendasi keyword.</p>
+          </div>
+        </section>
+
+        <section class="keyword-panel" aria-label="Top keyword turunan dan angle produk">
+          <div class="section-heading">
+            <h2>Top Keyword Turunan</h2>
+            <span id="derivedKeywordCount">0 keyword</span>
+          </div>
+          <div class="keyword-list" id="derivedKeywords">
+            <p class="empty-state">Belum ada keyword turunan.</p>
+          </div>
+          <div class="section-heading sub-heading">
+            <h2>Top Product Angle</h2>
+            <span id="angleCount">0 angle</span>
+          </div>
+          <div class="keyword-list" id="productAngles">
+            <p class="empty-state">Belum ada product angle.</p>
+          </div>
+        </section>
+        </div>
+
+        <section class="keyword-panel history-section" id="saved-searches" aria-label="Search history" hidden>
+          <div class="section-heading">
+            <h2>Search History</h2>
+            <span id="historyCount">0 pencarian</span>
+          </div>
+          <div class="history-list" id="searchHistory">
+            <p class="empty-state">Belum ada riwayat pencarian.</p>
+          </div>
+        </section>
+
+        <section class="results-tabs" aria-label="Pilih hasil riset">
+          <button class="result-tab is-active" type="button" data-result-tab="opportunities">Peluang Terbaik</button>
+          <button class="result-tab" type="button" data-result-tab="youtube">Video YT</button>
+          <button class="result-tab" type="button" data-result-tab="affiliate">Shopee Trends</button>
+        </section>
+
+        <section class="data-section is-active" data-section="opportunities">
+          <div class="section-heading">
+            <h2>Peluang Terbaik</h2>
+            <span id="tiktokCount">0 match</span>
+          </div>
+          <div class="result-grid" id="tiktokRows">
+            <p class="empty-state">Belum ada peluang viral.</p>
+          </div>
+        </section>
+
+        <section class="data-section" data-section="youtube">
+          <div class="section-heading">
+            <h2>YT Viral</h2>
+            <span id="youtubeCount">0 video</span>
+          </div>
+          <div class="result-grid" id="youtubeRows">
+            <p class="empty-state">Belum ada data YouTube.</p>
+          </div>
+        </section>
+
+        <section class="data-section" data-section="affiliate">
+          <div class="section-heading">
+            <h2>Trends Shopee</h2>
+            <span id="shopeeCount">0 trends</span>
+          </div>
+          <div class="result-grid" id="shopeeRows">
+            <p class="empty-state">Belum ada trends Shopee.</p>
+          </div>
+        </section>
+
+        <section class="controls legacy-tools" aria-label="Trend controls" hidden>
+          <label>
+            Niche / keyword
+            <input id="niche" type="text" value="gadget viral" placeholder="contoh: tas gym, alat dapur viral, gadget murah">
+          </label>
+          <label>
+            Platform
+            <select id="platform">
+              <option value="youtube">YouTube</option>
+            </select>
+          </label>
+          <label>
+            Hari terakhir
+            <input id="days" type="number" min="1" max="90" value="14">
+          </label>
+          <button id="search">Cari Trends</button>
+        </section>
+
+        <section class="insights" aria-label="Trend summary">
+          <div class="summary" id="summary">
+            Masukkan niche lalu cari sinyal produk dari view velocity, engagement, dan umur konten.
+          </div>
+          <div class="mini-card">
+            <span>Formula</span>
+            <strong>views/jam + engagement</strong>
+          </div>
+        </section>
+
+        <section class="grid" id="results" aria-live="polite"></section>
+
+        <section class="importer">
+          <div>
+            <p class="eyebrow">Fallback manual</p>
+            <h2>Import CSV Video</h2>
+          </div>
+          <textarea id="csv" spellcheck="false" placeholder="title,views,likes,comments,url&#10;Mini fan portable,120000,9200,430,https://..."></textarea>
+          <button id="parse">Analisis CSV</button>
+        </section>
+      </div>
+    </main>
+    <nav class="mobile-bottom-actions" aria-label="Mobile quick actions">
+      <a href="#trending-now">Search</a>
+      <a href="#emerging-products">Emerging</a>
+      <a href="#viral-discovery">Insights</a>
+      <a href="#analytics">Stats</a>
+    </nav>
+    <script src="/app.js"></script>
+  </body>
+</html>

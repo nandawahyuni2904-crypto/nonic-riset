@@ -1,0 +1,21 @@
+{
+  "name": "product-trend-finder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local dashboard to discover product trend signals from YouTube and TikTok-ready data.",
+  "scripts": {
+    "dev": "set NODE_ENV=development&& set DEV_UNLIMITED=true&& node server.js",
+    "start": "node server.js",
+    "prod": "set NODE_ENV=production&& node server.js",
+    "worker": "node worker.js",
+    "shopee:login": "node scripts/export-shopee-cookies.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bullmq": "^5.12.2",
+    "ioredis": "^5.4.1",
+    "playwright": "^1.60.0"
+  }
+}

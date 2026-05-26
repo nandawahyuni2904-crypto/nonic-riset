@@ -1,0 +1,9 @@
+{
+  "access_token": "eyJhbGciOiJIUzI1NiJ9.CK6ZfBABGPebmU0gASi_79PQBjDwyvX-BjgBQAFIBw.LjLajl563xd4E-AjFCgOLxjS3ImTJAEUcZoirY8tgss",
+  "refresh_token": "eyJhbGciOiJIUzI1NiJ9.CK6ZfBABGPebmU0gAii_79PQBjDf6-2wBDgBQAFIBw.hScdsltnHQFXeKje7T1m9_cE8Hh0c_BTU1KGoe1Zgds",
+  "shop_id": 161893879,
+  "expire_in": 14400,
+  "expires_at": "2026-05-26T05:30:39.152Z",
+  "authorized_at": "2026-05-25T10:23:03.959Z",
+  "refreshed_at": "2026-05-26T01:30:39.150Z"
+}

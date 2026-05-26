@@ -1,0 +1,1604 @@
+{
+  "timestamp": 1779693506642,
+  "result": {
+    "mode": "auto-discovery",
+    "seeds": [
+      "gadget",
+      "dapur",
+      "rumah",
+      "kecantikan",
+      "fashion",
+      "bayi",
+      "kesehatan",
+      "otomotif"
+    ],
+    "keywords": [
+      "gadget viral",
+      "organizer dapur",
+      "rak sepatu",
+      "skincare viral",
+      "tas viral",
+      "perlengkapan bayi",
+      "alat kesehatan",
+      "aksesoris mobil"
+    ],
+    "emergingProducts": [
+      {
+        "keyword": "kitchen gadget",
+        "parentKeyword": "testing kitchen gadgets",
+        "title": "Testing $1 Kitchen Gadgets",
+        "url": "https://www.youtube.com/shorts/Qr6kUC5KeoA",
+        "thumbnail": "https://i.ytimg.com/vi/Qr6kUC5KeoA/hqdefault.jpg",
+        "channel": "Nick DiGiovanni",
+        "avg_views": 21369048,
+        "views": 21369048,
+        "engagement": 0.024044964473850215,
+        "confidence": 70,
+        "product_confidence": 70,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 96,
+        "momentum_raw": 22526,
+        "lifecycle": "SATURATED",
+        "age_days": 5.6,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "gadget viral",
+        "merged_count": 18
+      },
+      {
+        "keyword": "gadget pelajar nomor",
+        "parentKeyword": "gadget pelajar nomor",
+        "title": "Gadget Pelajar Viral! Nomor 3 Paling Bikin Pengen Punya! 😱",
+        "url": "https://www.youtube.com/shorts/xfrfdlQkva8",
+        "thumbnail": "https://i.ytimg.com/vi/xfrfdlQkva8/hqdefault.jpg",
+        "channel": "Zona Viral",
+        "avg_views": 32719,
+        "views": 32719,
+        "engagement": 0.17576943060606987,
+        "confidence": 71,
+        "product_confidence": 71,
+        "top_hook": "viral",
+        "viral_hooks": [
+          "viral"
+        ],
+        "momentum_score": 94,
+        "momentum_raw": 19466,
+        "lifecycle": "SATURATED",
+        "age_days": 0.1,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "gadget viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "gadget dapur unik",
+        "parentKeyword": "gadget dapur unik",
+        "title": "Gadget Dapur Unik yang Wajib Ada di Rumah! Nomor 3 Mengejutkan 🤯",
+        "url": "https://www.youtube.com/shorts/ffgjzMzRXI4",
+        "thumbnail": "https://i.ytimg.com/vi/ffgjzMzRXI4/hqdefault.jpg",
+        "channel": "Zona Viral",
+        "avg_views": 1939276,
+        "views": 1939276,
+        "engagement": 0.04917247467611624,
+        "confidence": 82,
+        "product_confidence": 82,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 84,
+        "momentum_raw": 6654,
+        "lifecycle": "SATURATED",
+        "age_days": 3.1,
+        "repeat_count": 54,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "gadget viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "lips were bleeding",
+        "parentKeyword": "lips were bleeding",
+        "title": "my lips were bleeding haha🫶 #fyp #viral #selflove #makeup #skincare #relatable #beauty",
+        "url": "https://www.youtube.com/shorts/S6KLX2OzJsY",
+        "thumbnail": "https://i.ytimg.com/vi/S6KLX2OzJsY/hqdefault.jpg",
+        "channel": "INAFISH",
+        "avg_views": 2407299,
+        "views": 2407299,
+        "engagement": 0.02305571513966483,
+        "confidence": 83,
+        "product_confidence": 83,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 80,
+        "momentum_raw": 4189,
+        "lifecycle": "HOT",
+        "age_days": 3.6,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "skincare viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "tas sekolah kuliah",
+        "parentKeyword": "tas sekolah kuliah",
+        "title": "3 Tas Sekolah/Kuliah Paling Keren & Berguna yang Wajib Punya! 🎒🔥",
+        "url": "https://www.youtube.com/shorts/XBe8FMldX94",
+        "thumbnail": "https://i.ytimg.com/vi/XBe8FMldX94/hqdefault.jpg",
+        "channel": "Zona Viral",
+        "avg_views": 1805233,
+        "views": 1805233,
+        "engagement": 0.04837990442231003,
+        "confidence": 75,
+        "product_confidence": 75,
+        "top_hook": "wajib punya",
+        "viral_hooks": [
+          "wajib punya"
+        ],
+        "momentum_score": 76,
+        "momentum_raw": 2879,
+        "lifecycle": "HOT",
+        "age_days": 7.1,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "tas viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "benjolan kakinya potongan",
+        "parentKeyword": "benjolan kakinya potongan",
+        "title": "Benjolan di Kakinya Ternyata Potongan Logam",
+        "url": "https://www.youtube.com/shorts/C7RkQqc5Z6g",
+        "thumbnail": "https://i.ytimg.com/vi/C7RkQqc5Z6g/hqdefault.jpg",
+        "channel": "HK Media Group",
+        "avg_views": 16475,
+        "views": 16475,
+        "engagement": 0.1817298937784522,
+        "confidence": 61,
+        "product_confidence": 61,
+        "top_hook": "ternyata",
+        "viral_hooks": [
+          "ternyata"
+        ],
+        "momentum_score": 74,
+        "momentum_raw": 2320,
+        "lifecycle": "RISING",
+        "age_days": 0.4,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "alat kesehatan",
+        "merged_count": 1
+      },
+      {
+        "keyword": "masi minta tas",
+        "parentKeyword": "masi minta tas",
+        "title": "Soimah dapet gaun pengantin 350 juta dri igun masi minta tas‼️🤣 #viral #trending #soimah #fypシ #fyp",
+        "url": "https://www.youtube.com/shorts/9RPtbuxINNY",
+        "thumbnail": "https://i.ytimg.com/vi/9RPtbuxINNY/hqdefault.jpg",
+        "channel": "TimeeleesPlus+",
+        "avg_views": 3261259,
+        "views": 3261259,
+        "engagement": 0.010926761719936994,
+        "confidence": 70,
+        "product_confidence": 70,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 62,
+        "momentum_raw": 631,
+        "lifecycle": "RISING",
+        "age_days": 9.7,
+        "repeat_count": 69,
+        "isBreakoutCandidate": false,
+        "discoverySeed": "tas viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "tas jatuh sungai",
+        "parentKeyword": "tas jatuh sungai",
+        "title": "Tas Jatuh ke Sungai, Aksi Kakek Ini Bikin Semua Orang Kaget! #trending #viral",
+        "url": "https://www.youtube.com/shorts/Q1Soq5OLuHM",
+        "thumbnail": "https://i.ytimg.com/vi/Q1Soq5OLuHM/hqdefault.jpg",
+        "channel": "M4lip",
+        "avg_views": 177978,
+        "views": 177978,
+        "engagement": 0.029306992999134723,
+        "confidence": 60,
+        "product_confidence": 60,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 46,
+        "momentum_raw": 122,
+        "lifecycle": "RISING",
+        "age_days": 9.1,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "tas viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "perlengkapan bayi 10in1",
+        "parentKeyword": "perlengkapan bayi 10in1",
+        "title": "Perlengkapan bayi 10in1 #perlengkepanbayi #perlengkapanbaby #perlengkapanbayimurah #babycare #bayi",
+        "url": "https://www.youtube.com/shorts/m7mcbwBLLYE",
+        "thumbnail": "https://i.ytimg.com/vi/m7mcbwBLLYE/hqdefault.jpg",
+        "channel": "Muazfi Tutorial",
+        "avg_views": 994149,
+        "views": 994149,
+        "engagement": 0.0035185872540232904,
+        "confidence": 75,
+        "product_confidence": 75,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 42,
+        "momentum_raw": 81,
+        "lifecycle": "EARLY",
+        "age_days": 9.1,
+        "repeat_count": 157,
+        "isBreakoutCandidate": false,
+        "discoverySeed": "perlengkapan bayi",
+        "merged_count": 1
+      },
+      {
+        "keyword": "what skin eats",
+        "parentKeyword": "what skin eats",
+        "title": "What my SKIN eats in a day 😋🍃🍋 #skincare #viral ",
+        "url": "https://www.youtube.com/shorts/g9-GQAyamWA",
+        "thumbnail": "https://i.ytimg.com/vi/g9-GQAyamWA/hqdefault.jpg",
+        "channel": "Minco",
+        "avg_views": 1161,
+        "views": 1161,
+        "engagement": 0.03531438415159346,
+        "confidence": 71,
+        "product_confidence": 71,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 42,
+        "momentum_raw": 83,
+        "lifecycle": "EARLY",
+        "age_days": 0.1,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "skincare viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "rak sepatu susun",
+        "parentKeyword": "rak sepatu susun",
+        "title": "Rekomendasi Rak Sepatu Susun",
+        "url": "https://www.youtube.com/shorts/rkUh7aCDiPA",
+        "thumbnail": "https://i.ytimg.com/vi/rkUh7aCDiPA/hqdefault.jpg",
+        "channel": "JOYSOV",
+        "avg_views": 937,
+        "views": 937,
+        "engagement": 0.014941302027748132,
+        "confidence": 82,
+        "product_confidence": 82,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 41,
+        "momentum_raw": 72,
+        "lifecycle": "EARLY",
+        "age_days": 0.1,
+        "repeat_count": 106,
+        "isBreakoutCandidate": false,
+        "discoverySeed": "rak sepatu",
+        "merged_count": 1
+      },
+      {
+        "keyword": "gantungan tas ribu",
+        "parentKeyword": "gantungan tas ribu",
+        "title": "Bikin gantungan tas cuma 12 ribu di Himeku Space!",
+        "url": "https://www.youtube.com/shorts/oDxRK_IF6UM",
+        "thumbnail": "https://i.ytimg.com/vi/oDxRK_IF6UM/hqdefault.jpg",
+        "channel": "Himeku Indonesia",
+        "avg_views": 1605853,
+        "views": 1605853,
+        "engagement": 0.012159892592908566,
+        "confidence": 58,
+        "product_confidence": 58,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 40,
+        "momentum_raw": 62,
+        "lifecycle": "EARLY",
+        "age_days": 9.1,
+        "repeat_count": 1,
+        "isBreakoutCandidate": false,
+        "discoverySeed": "tas viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "kirain screen doang",
+        "parentKeyword": "kirain screen doang",
+        "title": "KIRAIN SCREEN DOANG😭 #MoelISkincareBaby #SalonMoell #skincareviral",
+        "url": "https://www.youtube.com/shorts/8RvV4d4TuW8",
+        "thumbnail": "https://i.ytimg.com/vi/8RvV4d4TuW8/hqdefault.jpg",
+        "channel": "Moell",
+        "avg_views": 210427,
+        "views": 210427,
+        "engagement": 0.006177914431132887,
+        "confidence": 68,
+        "product_confidence": 68,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 35,
+        "momentum_raw": 37,
+        "lifecycle": "EARLY",
+        "age_days": 7.8,
+        "repeat_count": 157,
+        "isBreakoutCandidate": false,
+        "discoverySeed": "skincare viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "ameenah udah cobain",
+        "parentKeyword": "ameenah udah cobain",
+        "title": "Ameenah udah cobain sendiri🤩🔥 #MoelISkincareBaby #SalonMoell  #ameenaanakmoell #skincareviral",
+        "url": "https://www.youtube.com/shorts/B04Q99t7kGA",
+        "thumbnail": "https://i.ytimg.com/vi/B04Q99t7kGA/hqdefault.jpg",
+        "channel": "Moell",
+        "avg_views": 35381,
+        "views": 35381,
+        "engagement": 0.018399706056923208,
+        "confidence": 71,
+        "product_confidence": 71,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 33,
+        "momentum_raw": 31,
+        "lifecycle": "EARLY",
+        "age_days": 5.2,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "skincare viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "girlies must have",
+        "parentKeyword": "girlies must have",
+        "title": "Girlies must have ✨🧖🏻‍♀️ #viral #ytshorts #selfcare #skincare #bodycare #haircare #selfcaretools",
+        "url": "https://www.youtube.com/shorts/DauLn1yk9fA",
+        "thumbnail": "https://i.ytimg.com/vi/DauLn1yk9fA/hqdefault.jpg",
+        "channel": "Pratiksha Dash",
+        "avg_views": 7187,
+        "views": 7187,
+        "engagement": 0.02852372338945318,
+        "confidence": 71,
+        "product_confidence": 71,
+        "top_hook": "",
+        "viral_hooks": [],
+        "momentum_score": 32,
+        "momentum_raw": 27,
+        "lifecycle": "EARLY",
+        "age_days": 2.1,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "skincare viral",
+        "merged_count": 1
+      },
+      {
+        "keyword": "pov perlengkapan bayi",
+        "parentKeyword": "pov perlengkapan bayi",
+        "title": "POV: KAMU BELI PERLENGKAPAN BAYI👶🏻👧🏻🤏🏻 #fypシ゚viral #pilihpilih #pov",
+        "url": "https://www.youtube.com/shorts/m2idz9OL8DE",
+        "thumbnail": "https://i.ytimg.com/vi/m2idz9OL8DE/hqdefault.jpg",
+        "channel": "NARA'S_POV",
+        "avg_views": 15851,
+        "views": 15851,
+        "engagement": 0.030912876159232855,
+        "confidence": 81,
+        "product_confidence": 81,
+        "top_hook": "viral",
+        "viral_hooks": [
+          "viral"
+        ],
+        "momentum_score": 27,
+        "momentum_raw": 17,
+        "lifecycle": "EARLY",
+        "age_days": 6.8,
+        "repeat_count": 157,
+        "isBreakoutCandidate": true,
+        "discoverySeed": "perlengkapan bayi",
+        "merged_count": 1
+      }
+    ],
+    "trendClusters": [
+      {
+        "parentKeyword": "kitchen gadget",
+        "count": 140,
+        "items": [
+          "tool item new gadget",
+          "gadget",
+          "kitchen gadget",
+          "new look new gadgets",
+          "look new gadgets smart",
+          "seat pad new gadgets",
+          "gadget pelajar nomor pengen",
+          "gadget pelajar nomor",
+          "items these home gadgets",
+          "items this little gadget",
+          "good products new gadgets",
+          "products new gadgets smart",
+          "testing kitchen gadgets",
+          "testing kitchen",
+          "tool items new gadgets",
+          "items new gadgets smart",
+          "gadget dapur unik ada",
+          "gadget dapur unik",
+          "dapur unik ada"
+        ]
+      },
+      {
+        "parentKeyword": "organizer dapur",
+        "count": 125,
+        "items": [
+          "organizer dapur",
+          "organizer",
+          "best kitchen organizer for",
+          "kitchen organizer for small",
+          "organizer for small spaces",
+          "best kitchen organizer",
+          "kitchen organizer for",
+          "organizer for small",
+          "wooden corner shelf organizer",
+          "corner shelf organizer for",
+          "shelf organizer for kitchen",
+          "corner shelf organizer",
+          "shelf organizer for",
+          "vertical kitchen organizer",
+          "vertical kitchen",
+          "kitchen organizer",
+          "pots and pans organizer",
+          "and pans organizer rack",
+          "pans organizer rack for",
+          "organizer rack for kitchen",
+          "and pans organizer",
+          "pans organizer rack",
+          "organizer sepatu",
+          "sepatu",
+          "sepatu tertutup anti debu",
+          "rak sepatu susun",
+          "rak sepatu",
+          "sepatu susun",
+          "belanja online rak sepatu",
+          "belanja online rak",
+          "rak lemari sepatu susun",
+          "lemari sepatu susun besi",
+          "lemari sepatu besi minimalis",
+          "lemari sepatu besi",
+          "sepatu besi minimalis",
+          "lemari sepatu",
+          "sepatu besi"
+        ]
+      },
+      {
+        "parentKeyword": "alat dapur",
+        "count": 88,
+        "items": [
+          "alat dapur",
+          "alat",
+          "bukan mainan biasa alat",
+          "mainan biasa alat medis",
+          "biasa alat medis unik",
+          "alat medis unik terapi",
+          "bukan mainan biasa",
+          "mainan biasa alat",
+          "adalah alat medis penderita",
+          "alat medis penderita diabetes",
+          "adalah alat medis",
+          "alat medis penderita",
+          "adalah alat",
+          "alat medis",
+          "kalian alat kesehatan dirumah",
+          "kalian alat kesehatan",
+          "alat kesehatan dirumah",
+          "kalian alat",
+          "alat kesehatan",
+          "nebulizer alat uap",
+          "nebulizer alat",
+          "alat uap",
+          "treadmill awalnya bukan alat",
+          "awalnya bukan alat olahraga",
+          "bukan alat olahraga tapi",
+          "alat olahraga tapi alat",
+          "olahraga tapi alat hukuman",
+          "awalnya bukan alat",
+          "alat pembersih telinga modern",
+          "alat pembersih telinga",
+          "alat pembersih"
+        ]
+      },
+      {
+        "parentKeyword": "antena variasi mobil",
+        "count": 54,
+        "items": [
+          "antena variasi mobil",
+          "antena variasi",
+          "variasi mobil",
+          "mobil",
+          "mobil dibawah pasaran mobil",
+          "dibawah pasaran mobil cunk",
+          "pasaran mobil cunk motor",
+          "mobil cunk motor klik",
+          "karpet mobil bergaransi",
+          "karpet mobil",
+          "mobil bergaransi",
+          "karpet",
+          "aksesoris mobil keren penuh",
+          "mobil keren penuh makna",
+          "aksesoris mobil keren",
+          "mobil keren penuh",
+          "aksesoris mobil",
+          "mobil keren",
+          "aksesoris mobil unik perjalanan",
+          "mobil unik perjalanan jauh",
+          "aksesoris mobil unik",
+          "mobil unik perjalanan",
+          "mobil unik",
+          "kamera mobil agya head",
+          "mobil agya head unit",
+          "kamera mobil agya",
+          "mobil agya head",
+          "kamera mobil",
+          "mobil agya",
+          "tempel tampilan mobil naik",
+          "tampilan mobil naik kelas",
+          "tempel tampilan mobil",
+          "tampilan mobil naik",
+          "mobil naik kelas",
+          "tampilan mobil",
+          "aksesoris mobil makin kece",
+          "mobil makin kece keren",
+          "aksesoris mobil makin",
+          "mobil makin kece",
+          "mobil makin",
+          "kasur angin mobil",
+          "kasur angin",
+          "angin mobil",
+          "aksesoris mobil karpet karet",
+          "mobil karpet karet universal",
+          "karpet karet universal baris",
+          "aksesoris mobil karpet",
+          "mobil karpet karet",
+          "karpet karet universal"
+        ]
+      },
+      {
+        "parentKeyword": "middle class skincare",
+        "count": 10,
+        "items": [
+          "middle class skincare",
+          "middle class",
+          "class skincare",
+          "skincare",
+          "instant tan removal skincare",
+          "instant tan removal",
+          "tan removal skincare",
+          "removal skincare"
+        ]
+      },
+      {
+        "parentKeyword": "rak lipat",
+        "count": 8,
+        "items": [
+          "rak lipat"
+        ]
+      },
+      {
+        "parentKeyword": "temu kitchen organizer",
+        "count": 6,
+        "items": [
+          "temu kitchen organizer",
+          "temu kitchen",
+          "kitchen organizer",
+          "kitchen organiser",
+          "kitchen organiser under flipkart",
+          "kitchen organiser under"
+        ]
+      },
+      {
+        "parentKeyword": "gak bawa tas",
+        "count": 6,
+        "items": [
+          "gak bawa tas",
+          "gak bawa",
+          "bawa tas",
+          "bawa ular besar tas",
+          "ular besar tas",
+          "besar tas"
+        ]
+      },
+      {
+        "parentKeyword": "pov perlengkapan bayi",
+        "count": 5,
+        "items": [
+          "pov perlengkapan bayi",
+          "pov perlengkapan",
+          "perlengkapan bayi",
+          "perlengkapan bayi baru lahir"
+        ]
+      },
+      {
+        "parentKeyword": "ara spil gantungan",
+        "count": 5,
+        "items": [
+          "ara spil gantungan tas",
+          "ara spil gantungan",
+          "spil gantungan tas",
+          "spil gantungan",
+          "gantungan tas"
+        ]
+      },
+      {
+        "parentKeyword": "lupa tas almira",
+        "count": 5,
+        "items": [
+          "lupa tas almira ketinggalan",
+          "lupa tas almira",
+          "tas almira ketinggalan",
+          "lupa tas",
+          "tas almira"
+        ]
+      },
+      {
+        "parentKeyword": "gantungan tas ribu",
+        "count": 4,
+        "items": [
+          "gantungan tas ribu himeku",
+          "gantungan tas ribu",
+          "tas ribu himeku",
+          "tas ribu"
+        ]
+      },
+      {
+        "parentKeyword": "alat kerokan badan",
+        "count": 3,
+        "items": [
+          "alat kerokan badan sakit",
+          "alat kerokan badan",
+          "alat kerokan"
+        ]
+      },
+      {
+        "parentKeyword": "besar tas sekolah",
+        "count": 3,
+        "items": [
+          "ular besar tas sekolah",
+          "besar tas sekolah",
+          "tas sekolah"
+        ]
+      },
+      {
+        "parentKeyword": "sampai lempar tas",
+        "count": 3,
+        "items": [
+          "ngamuk sampai lempar tas",
+          "sampai lempar tas",
+          "lempar tas"
+        ]
+      },
+      {
+        "parentKeyword": "tas jatuh sungai",
+        "count": 3,
+        "items": [
+          "tas jatuh sungai aksi",
+          "tas jatuh sungai",
+          "tas jatuh"
+        ]
+      },
+      {
+        "parentKeyword": "masi minta tas",
+        "count": 3,
+        "items": [
+          "igun masi minta tas",
+          "masi minta tas",
+          "minta tas"
+        ]
+      },
+      {
+        "parentKeyword": "rak sepatu",
+        "count": 3,
+        "items": [
+          "rak sepatu",
+          "rak sepatu tertutup anti"
+        ]
+      },
+      {
+        "parentKeyword": "kitchen organization ideas",
+        "count": 2,
+        "items": [
+          "kitchen organization ideas",
+          "kitchen organization"
+        ]
+      },
+      {
+        "parentKeyword": "benjolan kakinya potongan",
+        "count": 2,
+        "items": [
+          "benjolan kakinya potongan logam",
+          "benjolan kakinya potongan"
+        ]
+      },
+      {
+        "parentKeyword": "bayi bisa didorong bisa",
+        "count": 2,
+        "items": [
+          "bouncer bayi bisa didorong",
+          "bayi bisa didorong bisa"
+        ]
+      },
+      {
+        "parentKeyword": "tensimeter lengan jumbo",
+        "count": 2,
+        "items": [
+          "tensimeter lengan jumbo",
+          "tensimeter lengan"
+        ]
+      },
+      {
+        "parentKeyword": "ameenah udah cobain",
+        "count": 2,
+        "items": [
+          "ameenah udah cobain sendiri",
+          "ameenah udah cobain"
+        ]
+      },
+      {
+        "parentKeyword": "kirain screen doang",
+        "count": 2,
+        "items": [
+          "kirain screen doang",
+          "kirain screen"
+        ]
+      },
+      {
+        "parentKeyword": "lips were bleeding",
+        "count": 2,
+        "items": [
+          "lips were bleeding haha",
+          "lips were bleeding"
+        ]
+      },
+      {
+        "parentKeyword": "hand feet cleaning",
+        "count": 2,
+        "items": [
+          "hand feet cleaning tips",
+          "hand feet cleaning"
+        ]
+      },
+      {
+        "parentKeyword": "tas sekolah kuliah",
+        "count": 2,
+        "items": [
+          "tas sekolah kuliah keren",
+          "tas sekolah kuliah"
+        ]
+      },
+      {
+        "parentKeyword": "daily use kitchen",
+        "count": 2,
+        "items": [
+          "daily use kitchen products",
+          "daily use kitchen"
+        ]
+      },
+      {
+        "parentKeyword": "girlies must have",
+        "count": 2,
+        "items": [
+          "girlies must have",
+          "girlies must"
+        ]
+      },
+      {
+        "parentKeyword": "gantungan tas nya",
+        "count": 2,
+        "items": [
+          "spil gantungan tas nya",
+          "gantungan tas nya"
+        ]
+      },
+      {
+        "parentKeyword": "bio exsport bags",
+        "count": 2,
+        "items": [
+          "bio exsport bags",
+          "bio exsport"
+        ]
+      },
+      {
+        "parentKeyword": "harus lari lampu",
+        "count": 2,
+        "items": [
+          "kenapa harus lari lampu",
+          "harus lari lampu"
+        ]
+      },
+      {
+        "parentKeyword": "lari lampu ungu",
+        "count": 2,
+        "items": [
+          "harus lari lampu ungu",
+          "lari lampu ungu"
+        ]
+      },
+      {
+        "parentKeyword": "what skin eats",
+        "count": 2,
+        "items": [
+          "what skin eats day",
+          "what skin eats"
+        ]
+      },
+      {
+        "parentKeyword": "this how can",
+        "count": 2,
+        "items": [
+          "this how can glow",
+          "this how can"
+        ]
+      },
+      {
+        "parentKeyword": "yüzüm gözükmüş şfet şfetbeniöneçıkar",
+        "count": 1,
+        "items": [
+          "yüzüm gözükmüş şfet şfetbeniöneçıkar"
+        ]
+      },
+      {
+        "parentKeyword": "reestok kebutuhan perlengkapan baby",
+        "count": 1,
+        "items": [
+          "reestok kebutuhan perlengkapan baby"
+        ]
+      },
+      {
+        "parentKeyword": "kebutuhan perlengkapan baby sayyna",
+        "count": 1,
+        "items": [
+          "kebutuhan perlengkapan baby sayyna"
+        ]
+      },
+      {
+        "parentKeyword": "comment for link keychaincharging",
+        "count": 1,
+        "items": [
+          "comment for link keychaincharging"
+        ]
+      },
+      {
+        "parentKeyword": "for link keychaincharging cable",
+        "count": 1,
+        "items": [
+          "for link keychaincharging cable"
+        ]
+      },
+      {
+        "parentKeyword": "tren chinamaxxing remaja barat",
+        "count": 1,
+        "items": [
+          "tren chinamaxxing remaja barat"
+        ]
+      },
+      {
+        "parentKeyword": "chinamaxxing remaja barat gila",
+        "count": 1,
+        "items": [
+          "chinamaxxing remaja barat gila"
+        ]
+      },
+      {
+        "parentKeyword": "amazing beautiful school bag",
+        "count": 1,
+        "items": [
+          "amazing beautiful school bag"
+        ]
+      },
+      {
+        "parentKeyword": "sekolah kuliah keren berguna",
+        "count": 1,
+        "items": [
+          "sekolah kuliah keren berguna"
+        ]
+      },
+      {
+        "parentKeyword": "motor klik subscriber commet",
+        "count": 1,
+        "items": [
+          "motor klik subscriber commet"
+        ]
+      },
+      {
+        "parentKeyword": "hands stone feet darkcircle",
+        "count": 1,
+        "items": [
+          "hands stone feet darkcircle"
+        ]
+      },
+      {
+        "parentKeyword": "this store literally giving",
+        "count": 1,
+        "items": [
+          "this store literally giving"
+        ]
+      },
+      {
+        "parentKeyword": "store literally giving them",
+        "count": 1,
+        "items": [
+          "store literally giving them"
+        ]
+      },
+      {
+        "parentKeyword": "kerokan badan sakit iritasi",
+        "count": 1,
+        "items": [
+          "kerokan badan sakit iritasi"
+        ]
+      },
+      {
+        "parentKeyword": "bunda ngamuk sampai lempar",
+        "count": 1,
+        "items": [
+          "bunda ngamuk sampai lempar"
+        ]
+      },
+      {
+        "parentKeyword": "items this outdoor utensil",
+        "count": 1,
+        "items": [
+          "items this outdoor utensil"
+        ]
+      },
+      {
+        "parentKeyword": "cunk motor klik subscriber",
+        "count": 1,
+        "items": [
+          "cunk motor klik subscriber"
+        ]
+      },
+      {
+        "parentKeyword": "kitchen finds from meesho",
+        "count": 1,
+        "items": [
+          "kitchen finds from meesho"
+        ]
+      },
+      {
+        "parentKeyword": "ikea corner kitchen ideas",
+        "count": 1,
+        "items": [
+          "ikea corner kitchen ideas"
+        ]
+      },
+      {
+        "parentKeyword": "eyvah yüzüm gözükmüş şfet",
+        "count": 1,
+        "items": [
+          "eyvah yüzüm gözükmüş şfet"
+        ]
+      },
+      {
+        "parentKeyword": "trying this charcoal mask",
+        "count": 1,
+        "items": [
+          "trying this charcoal mask"
+        ]
+      },
+      {
+        "parentKeyword": "dapet gaun pengantin juta",
+        "count": 1,
+        "items": [
+          "dapet gaun pengantin juta"
+        ]
+      },
+      {
+        "parentKeyword": "finds from meesho amazon",
+        "count": 1,
+        "items": [
+          "finds from meesho amazon"
+        ]
+      },
+      {
+        "parentKeyword": "corner kitchen ideas ive",
+        "count": 1,
+        "items": [
+          "corner kitchen ideas ive"
+        ]
+      },
+      {
+        "parentKeyword": "beautiful school bag for",
+        "count": 1,
+        "items": [
+          "beautiful school bag for"
+        ]
+      },
+      {
+        "parentKeyword": "diy wooden corner shelf",
+        "count": 1,
+        "items": [
+          "diy wooden corner shelf"
+        ]
+      },
+      {
+        "parentKeyword": "fair darkspot free skin",
+        "count": 1,
+        "items": [
+          "fair darkspot free skin"
+        ]
+      },
+      {
+        "parentKeyword": "jatuh sungai aksi kakek",
+        "count": 1,
+        "items": [
+          "jatuh sungai aksi kakek"
+        ]
+      },
+      {
+        "parentKeyword": "cool items this outdoor",
+        "count": 1,
+        "items": [
+          "cool items this outdoor"
+        ]
+      },
+      {
+        "parentKeyword": "shocked that this needs",
+        "count": 1,
+        "items": [
+          "shocked that this needs"
+        ]
+      },
+      {
+        "parentKeyword": "gaun pengantin juta dri",
+        "count": 1,
+        "items": [
+          "gaun pengantin juta dri"
+        ]
+      },
+      {
+        "parentKeyword": "perlengkapan bayi 10in1",
+        "count": 1,
+        "items": [
+          "perlengkapan bayi 10in1"
+        ]
+      },
+      {
+        "parentKeyword": "cool items this little",
+        "count": 1,
+        "items": [
+          "cool items this little"
+        ]
+      },
+      {
+        "parentKeyword": "get fair darkspot free",
+        "count": 1,
+        "items": [
+          "get fair darkspot free"
+        ]
+      },
+      {
+        "parentKeyword": "this charcoal mask for",
+        "count": 1,
+        "items": [
+          "this charcoal mask for"
+        ]
+      },
+      {
+        "parentKeyword": "lampu ungu rumah sakit",
+        "count": 1,
+        "items": [
+          "lampu ungu rumah sakit"
+        ]
+      },
+      {
+        "parentKeyword": "item new gadget smart",
+        "count": 1,
+        "items": [
+          "item new gadget smart"
+        ]
+      },
+      {
+        "parentKeyword": "foldable seat pad new",
+        "count": 1,
+        "items": [
+          "foldable seat pad new"
+        ]
+      },
+      {
+        "parentKeyword": "cool items these home",
+        "count": 1,
+        "items": [
+          "cool items these home"
+        ]
+      },
+      {
+        "parentKeyword": "best tonner get glass",
+        "count": 1,
+        "items": [
+          "best tonner get glass"
+        ]
+      },
+      {
+        "parentKeyword": "tonner get glass skin",
+        "count": 1,
+        "items": [
+          "tonner get glass skin"
+        ]
+      },
+      {
+        "parentKeyword": "dark hands stone feet",
+        "count": 1,
+        "items": [
+          "dark hands stone feet"
+        ]
+      },
+      {
+        "parentKeyword": "this tan dirt removal",
+        "count": 1,
+        "items": [
+          "this tan dirt removal"
+        ]
+      },
+      {
+        "parentKeyword": "gadis bawa ular besar",
+        "count": 1,
+        "items": [
+          "gadis bawa ular besar"
+        ]
+      },
+      {
+        "parentKeyword": "tas ribu himeku space",
+        "count": 1,
+        "items": [
+          "tas ribu himeku space"
+        ]
+      },
+      {
+        "parentKeyword": "bayi baru lahir 10in1",
+        "count": 1,
+        "items": [
+          "bayi baru lahir 10in1"
+        ]
+      },
+      {
+        "parentKeyword": "lari lampu ungu rumah",
+        "count": 1,
+        "items": [
+          "lari lampu ungu rumah"
+        ]
+      },
+      {
+        "parentKeyword": "dapur unik ada rumah",
+        "count": 1,
+        "items": [
+          "dapur unik ada rumah"
+        ]
+      },
+      {
+        "parentKeyword": "that this needs made",
+        "count": 1,
+        "items": [
+          "that this needs made"
+        ]
+      },
+      {
+        "parentKeyword": "the small car inside",
+        "count": 1,
+        "items": [
+          "the small car inside"
+        ]
+      },
+      {
+        "parentKeyword": "the big yati inside",
+        "count": 1,
+        "items": [
+          "the big yati inside"
+        ]
+      },
+      {
+        "parentKeyword": "big yati inside car",
+        "count": 1,
+        "items": [
+          "big yati inside car"
+        ]
+      },
+      {
+        "parentKeyword": "sos chara chip tool",
+        "count": 1,
+        "items": [
+          "sos chara chip tool"
+        ]
+      },
+      {
+        "parentKeyword": "chara chip tool new",
+        "count": 1,
+        "items": [
+          "chara chip tool new"
+        ]
+      },
+      {
+        "parentKeyword": "bisa ada satwa liar",
+        "count": 1,
+        "items": [
+          "bisa ada satwa liar"
+        ]
+      },
+      {
+        "parentKeyword": "kok bisa ada satwa",
+        "count": 1,
+        "items": [
+          "kok bisa ada satwa"
+        ]
+      },
+      {
+        "parentKeyword": "kept the small car",
+        "count": 1,
+        "items": [
+          "kept the small car"
+        ]
+      },
+      {
+        "parentKeyword": "watch out for the",
+        "count": 1,
+        "items": [
+          "watch out for the"
+        ]
+      },
+      {
+        "parentKeyword": "out for the signs",
+        "count": 1,
+        "items": [
+          "out for the signs"
+        ]
+      },
+      {
+        "parentKeyword": "try this tan dirt",
+        "count": 1,
+        "items": [
+          "try this tan dirt"
+        ]
+      },
+      {
+        "parentKeyword": "hobinya jajan",
+        "count": 1,
+        "items": [
+          "hobinya jajan"
+        ]
+      },
+      {
+        "parentKeyword": "acne journey",
+        "count": 1,
+        "items": [
+          "acne journey"
+        ]
+      },
+      {
+        "parentKeyword": "dibeli gess",
+        "count": 1,
+        "items": [
+          "dibeli gess"
+        ]
+      }
+    ],
+    "analyticsSummary": {
+      "averageViews": 574281,
+      "averageEngagement": 0.01550513790556063,
+      "avgViews": 574281,
+      "avgEngagement": 0.01550513790556063,
+      "topUploadHour": "12:00",
+      "uploadDistributionByHour": [
+        {
+          "value": "12:00",
+          "count": 13
+        },
+        {
+          "value": "17:00",
+          "count": 9
+        },
+        {
+          "value": "08:00",
+          "count": 7
+        },
+        {
+          "value": "09:00",
+          "count": 7
+        },
+        {
+          "value": "10:00",
+          "count": 6
+        },
+        {
+          "value": "13:00",
+          "count": 6
+        },
+        {
+          "value": "18:00",
+          "count": 6
+        },
+        {
+          "value": "20:00",
+          "count": 6
+        },
+        {
+          "value": "11:00",
+          "count": 4
+        },
+        {
+          "value": "16:00",
+          "count": 4
+        },
+        {
+          "value": "19:00",
+          "count": 4
+        },
+        {
+          "value": "22:00",
+          "count": 4
+        },
+        {
+          "value": "05:00",
+          "count": 3
+        },
+        {
+          "value": "07:00",
+          "count": 3
+        },
+        {
+          "value": "01:00",
+          "count": 2
+        },
+        {
+          "value": "03:00",
+          "count": 2
+        },
+        {
+          "value": "06:00",
+          "count": 2
+        },
+        {
+          "value": "14:00",
+          "count": 2
+        },
+        {
+          "value": "21:00",
+          "count": 2
+        },
+        {
+          "value": "04:00",
+          "count": 1
+        },
+        {
+          "value": "23:00",
+          "count": 1
+        }
+      ],
+      "uploadDistributionByDay": [
+        {
+          "value": "2026-05-25",
+          "count": 11
+        },
+        {
+          "value": "2026-05-20",
+          "count": 10
+        },
+        {
+          "value": "2026-05-23",
+          "count": 10
+        },
+        {
+          "value": "2026-05-24",
+          "count": 10
+        },
+        {
+          "value": "2026-05-22",
+          "count": 8
+        },
+        {
+          "value": "2026-05-19",
+          "count": 7
+        },
+        {
+          "value": "2026-05-21",
+          "count": 7
+        },
+        {
+          "value": "2026-05-16",
+          "count": 6
+        },
+        {
+          "value": "2026-04-28",
+          "count": 4
+        },
+        {
+          "value": "2026-05-18",
+          "count": 3
+        },
+        {
+          "value": "2026-05-01",
+          "count": 2
+        },
+        {
+          "value": "2026-05-05",
+          "count": 2
+        },
+        {
+          "value": "2026-05-09",
+          "count": 2
+        },
+        {
+          "value": "2026-05-10",
+          "count": 2
+        },
+        {
+          "value": "2026-04-26",
+          "count": 1
+        },
+        {
+          "value": "2026-04-27",
+          "count": 1
+        },
+        {
+          "value": "2026-04-30",
+          "count": 1
+        },
+        {
+          "value": "2026-05-06",
+          "count": 1
+        },
+        {
+          "value": "2026-05-08",
+          "count": 1
+        },
+        {
+          "value": "2026-05-11",
+          "count": 1
+        },
+        {
+          "value": "2026-05-12",
+          "count": 1
+        },
+        {
+          "value": "2026-05-14",
+          "count": 1
+        },
+        {
+          "value": "2026-05-15",
+          "count": 1
+        },
+        {
+          "value": "2026-05-17",
+          "count": 1
+        }
+      ],
+      "topChannelFrequency": [
+        {
+          "value": "Moell",
+          "count": 3
+        },
+        {
+          "value": "Zona Viral",
+          "count": 3
+        },
+        {
+          "value": "Its.salina",
+          "count": 2
+        },
+        {
+          "value": "keiko medika alkes",
+          "count": 2
+        },
+        {
+          "value": "Muazfi Tutorial",
+          "count": 2
+        },
+        {
+          "value": "Muhammad Faizal Ramdhani",
+          "count": 2
+        },
+        {
+          "value": "Rumee's House",
+          "count": 2
+        },
+        {
+          "value": "Xiaosanxing",
+          "count": 2
+        }
+      ],
+      "trendFarmingChannels": [
+        {
+          "value": "Moell",
+          "count": 3
+        },
+        {
+          "value": "Zona Viral",
+          "count": 3
+        },
+        {
+          "value": "Its.salina",
+          "count": 2
+        },
+        {
+          "value": "keiko medika alkes",
+          "count": 2
+        },
+        {
+          "value": "Muazfi Tutorial",
+          "count": 2
+        },
+        {
+          "value": "Muhammad Faizal Ramdhani",
+          "count": 2
+        },
+        {
+          "value": "Rumee's House",
+          "count": 2
+        },
+        {
+          "value": "Xiaosanxing",
+          "count": 2
+        }
+      ],
+      "topProductAngle": "viral",
+      "topProductAngles": [
+        "viral",
+        "lipat",
+        "unik",
+        "murah",
+        "aesthetic",
+        "mini",
+        "minimalis",
+        "portable"
+      ],
+      "trendCategoryHeatmap": [
+        {
+          "category": "home",
+          "count": 79,
+          "intensity": 100
+        },
+        {
+          "category": "beauty",
+          "count": 1,
+          "intensity": 1
+        },
+        {
+          "category": "gadget",
+          "count": 3,
+          "intensity": 4
+        },
+        {
+          "category": "fashion",
+          "count": 3,
+          "intensity": 4
+        },
+        {
+          "category": "otomotif",
+          "count": 6,
+          "intensity": 8
+        },
+        {
+          "category": "dapur",
+          "count": 0,
+          "intensity": 0
+        },
+        {
+          "category": "bayi",
+          "count": 1,
+          "intensity": 1
+        },
+        {
+          "category": "kesehatan",
+          "count": 1,
+          "intensity": 1
+        }
+      ],
+      "topKeyword": "kitchen gadget"
+    },
+    "debug": {
+      "keywordCount": 8,
+      "rawVideoCount": 94,
+      "enrichedVideoCount": 94,
+      "errors": []
+    },
+    "refreshedAt": "2026-05-25T07:18:26.636Z",
+    "fromCache": false
+  }
+}

@@ -1,0 +1,331 @@
+{
+  "searches": {
+    "asbak": 1,
+    "kalung": 1,
+    "gitar": 1,
+    "dapur": 5,
+    "fashion pria": 2,
+    "alat rumah tangga": 6,
+    "fashion wanita": 3,
+    "aksesoris hp": 1,
+    "gadget viral": 1,
+    "kesehatan": 1,
+    "auto": 1,
+    "dekorasi rumah": 2,
+    "aksesoris wanita": 1,
+    "baby & kids": 1,
+    "perlengkapan ibadah": 1
+  },
+  "momentum": {
+    "asbak": 56,
+    "kalung putri": 46,
+    "syifa sampai melongo sejago": 52,
+    "alat dapur": 73,
+    "luxury perfume for": 62,
+    "peralatan rumah tangga keren": 62,
+    "piores fases pra mimkkkk": 61,
+    "ibumu iphone baru iphone": 69,
+    "gadget dapur unik": 62,
+    "gadget pelajar nomor": 82,
+    "perabotan rumah tangga unik": 62,
+    "alat kerokan": 57,
+    "you are you maior": 63,
+    "rahasia pori bersih ala": 62,
+    "new homewares bubble": 56,
+    "decor lampu": 76,
+    "rambut beli": 79,
+    "fashion wanita": 87,
+    "terlaris": 82,
+    "alat rumah": 85,
+    "sajadah travel aesthetic": 76
+  },
+  "niches": {
+    "home": 14,
+    "gadget": 7,
+    "fashion": 5,
+    "kesehatan": 1,
+    "bayi": 1
+  },
+  "events": [
+    {
+      "at": "2026-05-20T06:23:12.346Z",
+      "mode": "manual",
+      "keyword": "asbak",
+      "category": "",
+      "count": 11,
+      "topMomentumKeyword": "asbak",
+      "topMomentumScore": 56,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-20T06:26:50.542Z",
+      "mode": "manual",
+      "keyword": "kalung",
+      "category": "",
+      "count": 13,
+      "topMomentumKeyword": "kalung putri",
+      "topMomentumScore": 46,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-20T07:40:33.668Z",
+      "mode": "manual",
+      "keyword": "gitar",
+      "category": "",
+      "count": 11,
+      "topMomentumKeyword": "syifa sampai melongo sejago",
+      "topMomentumScore": 52,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-20T07:43:51.275Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Dapur",
+      "count": 20,
+      "topMomentumKeyword": "alat dapur",
+      "topMomentumScore": 69,
+      "niche": "gadget"
+    },
+    {
+      "at": "2026-05-20T14:51:43.891Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Fashion Pria",
+      "count": 20,
+      "topMomentumKeyword": "luxury perfume for",
+      "topMomentumScore": 59,
+      "niche": "fashion"
+    },
+    {
+      "at": "2026-05-20T16:49:32.718Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "peralatan rumah tangga keren",
+      "topMomentumScore": 62,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-25T07:18:26.955Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "peralatan rumah tangga keren",
+      "topMomentumScore": 62,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-25T07:18:49.095Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Fashion Wanita",
+      "count": 20,
+      "topMomentumKeyword": "piores fases pra mimkkkk",
+      "topMomentumScore": 61,
+      "niche": "fashion"
+    },
+    {
+      "at": "2026-05-25T07:19:27.097Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Dapur",
+      "count": 20,
+      "topMomentumKeyword": "alat dapur",
+      "topMomentumScore": 69,
+      "niche": "gadget"
+    },
+    {
+      "at": "2026-05-25T07:31:54.909Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Aksesoris HP",
+      "count": 20,
+      "topMomentumKeyword": "ibumu iphone baru iphone",
+      "topMomentumScore": 69,
+      "niche": "gadget"
+    },
+    {
+      "at": "2026-05-25T10:29:48.481Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "gadget dapur unik",
+      "topMomentumScore": 62,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-25T10:29:56.825Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Dapur",
+      "count": 20,
+      "topMomentumKeyword": "alat dapur",
+      "topMomentumScore": 69,
+      "niche": "gadget"
+    },
+    {
+      "at": "2026-05-25T10:30:03.172Z",
+      "mode": "manual",
+      "keyword": "gadget viral",
+      "category": "",
+      "count": 19,
+      "topMomentumKeyword": "gadget pelajar nomor",
+      "topMomentumScore": 82,
+      "niche": "gadget"
+    },
+    {
+      "at": "2026-05-25T11:16:01.124Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "gadget dapur unik",
+      "topMomentumScore": 62,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-25T11:16:15.695Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Dapur",
+      "count": 20,
+      "topMomentumKeyword": "alat dapur",
+      "topMomentumScore": 69,
+      "niche": "gadget"
+    },
+    {
+      "at": "2026-05-25T11:56:44.043Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "perabotan rumah tangga unik",
+      "topMomentumScore": 62,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-25T11:57:05.617Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Fashion Pria",
+      "count": 20,
+      "topMomentumKeyword": "luxury perfume for",
+      "topMomentumScore": 62,
+      "niche": "fashion"
+    },
+    {
+      "at": "2026-05-25T11:57:24.116Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Kesehatan",
+      "count": 20,
+      "topMomentumKeyword": "alat kerokan",
+      "topMomentumScore": 57,
+      "niche": "kesehatan"
+    },
+    {
+      "at": "2026-05-25T14:14:20.246Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Fashion Wanita",
+      "count": 20,
+      "topMomentumKeyword": "you are you maior",
+      "topMomentumScore": 63,
+      "niche": "fashion"
+    },
+    {
+      "at": "2026-05-25T15:07:16.583Z",
+      "mode": "auto",
+      "keyword": "",
+      "category": "",
+      "count": 17,
+      "topMomentumKeyword": "rahasia pori bersih ala",
+      "topMomentumScore": 62,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-25T15:07:39.369Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Dekorasi Rumah",
+      "count": 20,
+      "topMomentumKeyword": "new homewares bubble",
+      "topMomentumScore": 56,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-26T01:30:48.482Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Dapur",
+      "count": 20,
+      "topMomentumKeyword": "alat dapur",
+      "topMomentumScore": 73,
+      "niche": "gadget"
+    },
+    {
+      "at": "2026-05-26T02:01:16.934Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Dekorasi Rumah",
+      "count": 20,
+      "topMomentumKeyword": "decor lampu",
+      "topMomentumScore": 76,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-26T02:12:49.154Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Aksesoris Wanita",
+      "count": 20,
+      "topMomentumKeyword": "rambut beli",
+      "topMomentumScore": 79,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-26T02:15:15.748Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Fashion Wanita",
+      "count": 20,
+      "topMomentumKeyword": "fashion wanita",
+      "topMomentumScore": 87,
+      "niche": "fashion"
+    },
+    {
+      "at": "2026-05-26T02:20:10.147Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Baby & Kids",
+      "count": 20,
+      "topMomentumKeyword": "terlaris",
+      "topMomentumScore": 82,
+      "niche": "bayi"
+    },
+    {
+      "at": "2026-05-26T02:56:41.118Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "alat rumah",
+      "topMomentumScore": 85,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-26T05:06:02.170Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Perlengkapan Ibadah",
+      "count": 20,
+      "topMomentumKeyword": "sajadah travel aesthetic",
+      "topMomentumScore": 76,
+      "niche": "home"
+    }
+  ]
+}
