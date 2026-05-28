@@ -1,6 +1,9 @@
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
 const { buildAuthUrl } = require("../../services/shopeeOpen");
 
-module.exports = function handler(req, res) {
+export default function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ error: "Method not allowed" });
@@ -8,15 +11,10 @@ module.exports = function handler(req, res) {
 
   try {
     const data = buildAuthUrl();
-    return res.status(200).json({
-      authUrl: data.authUrl,
-      redirectUrl: data.redirectUrl,
-      environment: data.environment,
-      redirectParamName: data.redirectParamName
-    });
+    return res.redirect(302, data.authUrl);
   } catch (error) {
     return res.status(error.code === "SHOPEE_OPEN_NOT_CONFIGURED" ? 400 : 500).json({
       error: error.message
     });
   }
-};
+}

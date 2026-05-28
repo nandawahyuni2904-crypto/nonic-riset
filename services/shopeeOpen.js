@@ -44,7 +44,11 @@ function getConfig() {
     environment,
     baseUrl,
     authBaseUrl,
-    redirectUrl: String(process.env.SHOPEE_REDIRECT_URL || "https://example.com").trim(),
+    redirectUrl: String(
+      process.env.SHOPEE_REDIRECT
+      || process.env.SHOPEE_REDIRECT_URL
+      || "https://nonic-riset.vercel.app/api/shopee/callback"
+    ).trim(),
     region: String(process.env.SHOPEE_SHOP_REGION || "ID").trim().toUpperCase()
   };
 }
