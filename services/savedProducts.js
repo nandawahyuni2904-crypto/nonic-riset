@@ -42,8 +42,13 @@ async function readSavedProducts() {
 }
 
 async function writeSavedProducts(items) {
+  if (isReadOnlyRuntime()) return;
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(SAVE_FILE, JSON.stringify(items, null, 2), "utf8");
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 function normalizeProduct(product) {

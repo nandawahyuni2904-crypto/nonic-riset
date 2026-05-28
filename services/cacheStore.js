@@ -71,6 +71,7 @@ function getCacheStatus() {
 function ensureLoaded() {
   if (loaded) return;
   loaded = true;
+  if (isReadOnlyRuntime()) return;
   try {
     if (!fs.existsSync(CACHE_FILE)) return;
     const raw = JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
@@ -81,11 +82,16 @@ function ensureLoaded() {
 }
 
 function persist() {
+  if (isReadOnlyRuntime()) return;
   fs.mkdirSync(path.dirname(CACHE_FILE), { recursive: true });
   fs.writeFileSync(CACHE_FILE, JSON.stringify({
     updatedAt: new Date().toISOString(),
     entries: Object.fromEntries(memory)
   }, null, 2));
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 function persistCache() {

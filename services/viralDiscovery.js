@@ -181,6 +181,7 @@ function areSimilarKey(a, b) {
 }
 
 async function readDiscoveryCache() {
+  if (isReadOnlyRuntime()) return null;
   try {
     return JSON.parse(await fs.readFile(DISCOVERY_CACHE_FILE, "utf8"));
   } catch {
@@ -189,8 +190,13 @@ async function readDiscoveryCache() {
 }
 
 async function writeDiscoveryCache(result) {
+  if (isReadOnlyRuntime()) return;
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(DISCOVERY_CACHE_FILE, `${JSON.stringify({ timestamp: Date.now(), result }, null, 2)}\n`, "utf8");
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 function average(values) {

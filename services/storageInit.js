@@ -10,6 +10,10 @@ const FILES = {
 };
 
 function ensureStorage() {
+  if (isReadOnlyRuntime()) {
+    console.warn("[storage] Persistent data folder disabled in production/serverless runtime.");
+    return;
+  }
   fs.mkdirSync(DATA_DIR, { recursive: true });
   Object.entries(FILES).forEach(([filename, initial]) => {
     const filePath = path.join(DATA_DIR, filename);
@@ -17,6 +21,10 @@ function ensureStorage() {
       fs.writeFileSync(filePath, `${JSON.stringify(initial, null, 2)}\n`, "utf8");
     }
   });
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 module.exports = {

@@ -33,12 +33,17 @@ function startupWarn(message) {
 }
 
 function append(filename, line) {
+  if (isReadOnlyRuntime()) return;
   try {
     fs.mkdirSync(LOG_DIR, { recursive: true });
     fs.appendFileSync(path.join(LOG_DIR, filename), `${new Date().toISOString()} ${line}\n`, "utf8");
   } catch {
     // Logging must never crash the app.
   }
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 module.exports = {

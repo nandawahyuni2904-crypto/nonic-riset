@@ -17,6 +17,7 @@ class JsonStore {
   write(nextData) {
     this.data = nextData;
     this.loaded = true;
+    if (isReadOnlyRuntime()) return this.data;
     fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
     fs.writeFileSync(this.filePath, `${JSON.stringify(this.data, null, 2)}\n`, "utf8");
     return this.data;
@@ -31,6 +32,10 @@ class JsonStore {
   ensureLoaded() {
     if (this.loaded) return;
     this.loaded = true;
+    if (isReadOnlyRuntime()) {
+      this.data = this.initialData;
+      return;
+    }
     try {
       if (!fs.existsSync(this.filePath)) {
         this.data = this.initialData;
@@ -41,6 +46,10 @@ class JsonStore {
       this.data = this.initialData;
     }
   }
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 module.exports = {

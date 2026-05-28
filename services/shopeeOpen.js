@@ -518,7 +518,6 @@ async function readToken() {
 }
 
 async function saveToken(token) {
-  await fs.mkdir(DATA_DIR, { recursive: true });
   const normalized = normalizeToken(token);
   if (!normalized.access_token) {
     const error = new Error("Shopee token exchange tidak mengembalikan access_token.");
@@ -526,8 +525,20 @@ async function saveToken(token) {
     error.response = stripTokenFields(token);
     throw error;
   }
+  if (isReadOnlyRuntime()) {
+    shopeeApiLog("token_save_skipped_readonly_runtime", {
+      shopId: normalized.shop_id,
+      expiresAt: normalized.expires_at
+    });
+    return normalized;
+  }
+  await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(TOKEN_FILE, `${JSON.stringify(normalized, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
   return normalized;
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 function normalizeToken(token) {

@@ -432,10 +432,18 @@ async function looksBlocked(page) {
 }
 
 async function saveScreenshot(page, fileName, debug) {
+  if (isReadOnlyRuntime()) {
+    debug("Screenshot skipped in production/serverless runtime.");
+    return "";
+  }
   fs.mkdirSync(DEBUG_DIR, { recursive: true });
   const target = path.join(DEBUG_DIR, fileName);
   await page.screenshot({ path: target, fullPage: true });
   debug(`Screenshot saved: ${target}`);
+}
+
+function isReadOnlyRuntime() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 function dedupe(items, getKey) {
