@@ -1,7 +1,7 @@
 const crypto = require("node:crypto");
 
 const AUTH_PATH = "/api/v2/shop/auth_partner";
-const TEST_BASE_URL = "https://partner.test-stable.shopeemobile.com";
+const TEST_BASE_URL = "https://openplatform.sandbox.test-stable.shopee.sg";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
