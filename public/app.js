@@ -879,9 +879,52 @@ function renderCard(item) {
 }
 
 async function fetchJson(url, options) {
-  const response = await fetch(url, options);
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Request failed");
+  let response;
+  try {
+    response = await fetch(url, options);
+  } catch (error) {
+    console.error("[fetchJson] Network failure", { url, error });
+    throw new Error(`Tidak bisa menghubungi server: ${error.message}`);
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const text = await response.text();
+  let data = null;
+  if (contentType.includes("application/json")) {
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch (error) {
+      console.error("[fetchJson] Invalid JSON response", {
+        url,
+        status: response.status,
+        contentType,
+        bodyPreview: text.slice(0, 250),
+        error
+      });
+      throw new Error("Server mengirim JSON tidak valid.");
+    }
+  } else {
+    console.error("[fetchJson] Non-JSON response", {
+      url,
+      status: response.status,
+      contentType,
+      bodyPreview: text.slice(0, 250)
+    });
+    data = {
+      error: text ? text.slice(0, 250) : `Response bukan JSON (${response.status})`,
+      status: response.status,
+      contentType
+    };
+  }
+
+  if (!response.ok) {
+    console.error("[fetchJson] Request failed", {
+      url,
+      status: response.status,
+      data
+    });
+    throw new Error(data.error || data.message || `Request gagal (${response.status})`);
+  }
   return data;
 }
 
