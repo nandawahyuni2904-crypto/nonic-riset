@@ -1,9 +1,6 @@
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
 const { buildAuthUrl } = require("../../services/shopeeOpen");
 
-export default function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ error: "Method not allowed" });
@@ -17,4 +14,4 @@ export default function handler(req, res) {
       error: error.message
     });
   }
-}
+};
