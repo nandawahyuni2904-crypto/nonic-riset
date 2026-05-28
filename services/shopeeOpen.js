@@ -8,7 +8,6 @@ const DATA_DIR = path.join(__dirname, "..", "data");
 const TOKEN_FILE = path.join(DATA_DIR, "shopee-token.json");
 const DEFAULT_BASE_URL = "https://partner.shopeemobile.com";
 const DEFAULT_SANDBOX_BASE_URL = "https://partner.test-stable.shopeemobile.com";
-const DEFAULT_SANDBOX_AUTH_BASE_URL = "https://openplatform.sandbox.test-stable.shopee.sg";
 const PRODUCTION_AUTH_BASE_URL = "https://partner.shopeemobile.com";
 const AUTH_PATH = "/api/v2/shop/auth_partner";
 const TOKEN_PATH = "/api/v2/auth/token/get";
@@ -29,9 +28,9 @@ function getConfig() {
   const environment = normalizeEnvironment(process.env.SHOPEE_ENV || process.env.SHOPEE_OPEN_ENV || "");
   const defaultBaseUrl = environment === "sandbox" ? DEFAULT_SANDBOX_BASE_URL : DEFAULT_BASE_URL;
   const baseUrl = String(process.env.SHOPEE_OPEN_BASE_URL || process.env.SHOPEE_BASE_URL || defaultBaseUrl).trim();
-  const defaultAuthBaseUrl = environment === "production"
-    ? PRODUCTION_AUTH_BASE_URL
-    : (isSandboxBaseUrl(baseUrl) ? DEFAULT_SANDBOX_AUTH_BASE_URL : PRODUCTION_AUTH_BASE_URL);
+  const defaultAuthBaseUrl = environment === "sandbox"
+    ? DEFAULT_SANDBOX_BASE_URL
+    : PRODUCTION_AUTH_BASE_URL;
   const authBaseUrl = String(
     process.env.SHOPEE_AUTH_BASE_URL
     || process.env.SHOPEE_OPEN_AUTH_BASE_URL
@@ -739,7 +738,7 @@ function isSandboxBaseUrl(value) {
 
 function normalizeEnvironment(value) {
   const clean = String(value || "").trim().toLowerCase();
-  return clean === "sandbox" ? "sandbox" : "production";
+  return /^(sandbox|test|testing|development|dev)$/.test(clean) ? "sandbox" : "production";
 }
 
 module.exports = {
