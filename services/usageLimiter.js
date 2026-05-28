@@ -1,6 +1,7 @@
 const { JsonStore } = require("./jsonStore");
 
 const store = new JsonStore("usage.json", { days: {} });
+let devUnlimitedProductionWarningShown = false;
 
 function getUserContext(req) {
   const token = getHeader(req, "x-member-token");
@@ -65,7 +66,13 @@ function getClientId(req) {
 }
 
 function isDevelopmentUnlimited(req) {
-  const enabled = process.env.DEV_UNLIMITED === "true" || process.env.NODE_ENV === "development";
+  const devUnlimitedEnabled = process.env.DEV_UNLIMITED === "true";
+  const isProduction = process.env.NODE_ENV === "production";
+  if (devUnlimitedEnabled && isProduction) {
+    warnDevUnlimitedProduction();
+    return false;
+  }
+  const enabled = devUnlimitedEnabled || process.env.NODE_ENV === "development";
   if (!enabled) return false;
   return isLocalRequest(req);
 }
@@ -83,6 +90,12 @@ function getHeader(req, name) {
 
 function getMemberApiToken() {
   return String(process.env.MEMBER_API_TOKEN || "").trim();
+}
+
+function warnDevUnlimitedProduction() {
+  if (devUnlimitedProductionWarningShown) return;
+  devUnlimitedProductionWarningShown = true;
+  console.warn("[startup] DEV_UNLIMITED=true aktif di production. Bypass dev dinonaktifkan otomatis, app tetap berjalan.");
 }
 
 function dayKey() {
