@@ -366,7 +366,8 @@ function renderResearch(data) {
   renderTrendIntelligence(data.analyticsSummary || stats);
   setTotals(opportunities.length, shorts.length, products.length);
   updateShopeeTrendBadge(products.length);
-  setResearchStatus(formatResearchMessage(data.message || `Selesai. ${opportunities.length} peluang, ${shorts.length} video viral, ${products.length} trends Shopee.`), products.length ? "success" : "warning");
+  const shopeeNote = products.length ? "" : " Menunggu approval AMS Shopee.";
+  setResearchStatus(formatResearchMessage(data.message || `Selesai. ${opportunities.length} peluang, ${shorts.length} video viral, ${products.length} trends Shopee.${shopeeNote}`), shorts.length || opportunities.length ? "success" : "warning");
 }
 
 function updateShopeeTrendBadge(count) {
@@ -375,8 +376,8 @@ function updateShopeeTrendBadge(count) {
     if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Active";
     return;
   }
-  setBadge(els.shopeeBadge, "Waiting AMS", "warning");
-  if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Waiting AMS";
+  setBadge(els.shopeeBadge, "Menunggu AMS", "warning");
+  if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Menunggu AMS";
 }
 
 function formatResearchMessage(message) {
@@ -462,7 +463,7 @@ function renderSourcePage(source) {
 }
 
 function shopeePendingMessage(error) {
-  return emptyMessage(error || "Shopee Trends menunggu akses AMS", "Request AMS sudah dikirim. Data Shopee akan otomatis aktif setelah permission disetujui.");
+  return emptyMessage(error || "Menunggu approval AMS Shopee", "Hasil YT Viral dan Peluang tetap tampil. Data Shopee akan aktif otomatis setelah AMS disetujui.");
 }
 
 function renderGrid(target, html) {
@@ -494,7 +495,7 @@ function updateStatusFromState(state, done) {
 }
 
 function simpleSourceError(source) {
-  if (source === "shopee") return "Shopee belum mengambil data trends.";
+  if (source === "shopee") return "Menunggu approval AMS Shopee";
   return "YouTube Shorts belum tersedia";
 }
 

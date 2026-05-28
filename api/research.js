@@ -45,7 +45,7 @@ module.exports = async function handler(req, res) {
         youtube: [shortsResult.debug || {}],
         serverless: true
       },
-      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee, ${opportunities.length} peluang.`
+      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee, ${opportunities.length} peluang.${products.length ? "" : " Menunggu approval AMS Shopee."}`
     });
   } catch (error) {
     console.error("[api/research] failed", {
