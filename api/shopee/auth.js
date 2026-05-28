@@ -3,8 +3,6 @@ const crypto = require("node:crypto");
 const AUTH_PATH = "/api/v2/shop/auth_partner";
 const TEST_BASE_URL = "https://partner.test-stable.shopeemobile.com";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
-const DEFAULT_REDIRECT_URL = "https://nonic-riset.vercel.app/api/shopee/callback";
-
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -14,7 +12,7 @@ module.exports = async function handler(req, res) {
   req.query = req.query || parseQuery(req);
   const partnerId = String(process.env.SHOPEE_PARTNER_ID || "").trim();
   const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || "").trim();
-  const redirectUrl = String(process.env.SHOPEE_REDIRECT || process.env.SHOPEE_REDIRECT_URL || DEFAULT_REDIRECT_URL).trim();
+  const redirectUrl = String(process.env.SHOPEE_REDIRECT || "").trim();
 
   if (!partnerId || !partnerKey) {
     return res.status(400).json({
@@ -23,20 +21,20 @@ module.exports = async function handler(req, res) {
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const baseString = `${partnerId}${AUTH_PATH}${timestamp}${redirectUrl}`;
+  const path = AUTH_PATH;
+  const baseString = `${partnerId}${path}${timestamp}`;
   const sign = crypto.createHmac("sha256", partnerKey).update(baseString).digest("hex");
   const envName = String(process.env.SHOPEE_ENV || "production").trim().toLowerCase() || "production";
   const baseUrl = resolveBaseUrl(envName);
   console.log("[shopee-auth-debug]", {
     partner_id: partnerId,
-    path: AUTH_PATH,
+    path,
     timestamp,
     baseStringLength: baseString.length,
     signLength: sign.length,
     environment: envName
   });
 
-  const path = AUTH_PATH;
   if (req.query.debug === "1") {
     return res.status(200).json({
       partnerId,
