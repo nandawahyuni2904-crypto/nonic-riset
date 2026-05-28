@@ -11,8 +11,9 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const partnerId = String(process.env.SHOPEE_PARTNER_ID || process.env.SHOPEE_TEST_PARTNER_ID || "").trim();
-  const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || process.env.SHOPEE_TEST_PARTNER_KEY || "").trim();
+  req.query = req.query || parseQuery(req);
+  const partnerId = String(process.env.SHOPEE_PARTNER_ID || "").trim();
+  const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || "").trim();
   const redirectUrl = String(process.env.SHOPEE_REDIRECT || process.env.SHOPEE_REDIRECT_URL || DEFAULT_REDIRECT_URL).trim();
 
   if (!partnerId || !partnerKey) {
@@ -24,11 +25,46 @@ module.exports = async function handler(req, res) {
   const timestamp = Math.floor(Date.now() / 1000);
   const baseString = `${partnerId}${AUTH_PATH}${timestamp}`;
   const sign = crypto.createHmac("sha256", partnerKey).update(baseString).digest("hex");
-  const baseUrl = resolveBaseUrl(process.env.SHOPEE_ENV);
+  const envName = String(process.env.SHOPEE_ENV || "production").trim().toLowerCase() || "production";
+  const baseUrl = resolveBaseUrl(envName);
+  console.log("[shopee-auth-debug]", {
+    partner_id: partnerId,
+    path: AUTH_PATH,
+    timestamp,
+    baseStringLength: baseString.length,
+    signLength: sign.length,
+    environment: envName
+  });
+
+  const path = AUTH_PATH;
+  if (req.query.debug === "1") {
+    return res.status(200).json({
+      partnerId,
+      partnerIdType: typeof partnerId,
+      path,
+      timestamp,
+      baseString,
+      baseStringLength: baseString.length,
+      redirectUrl,
+      sign,
+      signLength: sign.length,
+      envName,
+      baseUrl
+    });
+  }
+
   const authUrl = `${baseUrl}${AUTH_PATH}?partner_id=${partnerId}&timestamp=${timestamp}&sign=${sign}&redirect=${encodeURIComponent(redirectUrl)}`;
 
   return res.redirect(302, authUrl);
 };
+
+function parseQuery(req) {
+  const host = req.headers?.host || "localhost";
+  const url = new URL(req.url || "/", `https://${host}`);
+  const query = {};
+  for (const [key, value] of url.searchParams.entries()) query[key] = value;
+  return query;
+}
 
 function resolveBaseUrl(value) {
   const env = String(value || "").trim().toLowerCase();
