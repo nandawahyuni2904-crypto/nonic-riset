@@ -3,9 +3,9 @@ const { JsonStore } = require("./jsonStore");
 const store = new JsonStore("usage.json", { days: {} });
 
 function getUserContext(req) {
-  const token = req.headers["x-member-token"] || "";
-  const expected = process.env.MEMBER_API_TOKEN || "";
-  const isMember = Boolean(expected && token === expected);
+  const token = getHeader(req, "x-member-token");
+  const expected = getMemberApiToken();
+  const isMember = Boolean(expected && token && token === expected);
   const isDevUnlimited = isDevelopmentUnlimited(req);
   return {
     mode: isDevUnlimited ? "dev" : isMember ? "member" : "guest",
@@ -54,14 +54,14 @@ function recordSearch(req) {
 function getUsageStatus(req) {
   const context = getUserContext(req);
   if (context.devUnlimited) return { mode: "dev", used: 0, limit: "unlimited", remaining: "unlimited", devUnlimited: true };
-  if (context.mode === "member") return { mode: "member", used: 0, limit: "unlimited", remaining: "unlimited" };
+  if (context.mode === "member") return { mode: "member", used: 0, limit: "unlimited", remaining: "unlimited", memberModeEnabled: true };
   const limit = Number(process.env.DAILY_SEARCH_LIMIT || 5);
   const used = Number(store.read().days?.[dayKey()]?.[context.key] || 0);
-  return { mode: "guest", used, limit, remaining: Math.max(0, limit - used) };
+  return { mode: "guest", used, limit, remaining: Math.max(0, limit - used), memberModeEnabled: Boolean(getMemberApiToken()) };
 }
 
 function getClientId(req) {
-  return String(req.headers["x-client-id"] || req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "local").split(",")[0].trim();
+  return String(getHeader(req, "x-client-id") || getHeader(req, "x-forwarded-for") || req?.socket?.remoteAddress || "local").split(",")[0].trim();
 }
 
 function isDevelopmentUnlimited(req) {
@@ -71,9 +71,18 @@ function isDevelopmentUnlimited(req) {
 }
 
 function isLocalRequest(req) {
-  const host = String(req.headers.host || "");
-  const remote = String(req.socket?.remoteAddress || "");
+  const host = String(getHeader(req, "host") || "");
+  const remote = String(req?.socket?.remoteAddress || "");
   return /localhost|127\.0\.0\.1|\[::1\]|::1/i.test(host) || /127\.0\.0\.1|::1|::ffff:127\.0\.0\.1/.test(remote);
+}
+
+function getHeader(req, name) {
+  const headers = req?.headers || {};
+  return String(headers[name] || headers[name.toLowerCase()] || "").trim();
+}
+
+function getMemberApiToken() {
+  return String(process.env.MEMBER_API_TOKEN || "").trim();
 }
 
 function dayKey() {
