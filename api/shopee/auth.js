@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const baseString = `${partnerId}${AUTH_PATH}${timestamp}`;
+  const baseString = `${partnerId}${AUTH_PATH}${timestamp}${redirectUrl}`;
   const sign = crypto.createHmac("sha256", partnerKey).update(baseString).digest("hex");
   const envName = String(process.env.SHOPEE_ENV || "production").trim().toLowerCase() || "production";
   const baseUrl = resolveBaseUrl(envName);
