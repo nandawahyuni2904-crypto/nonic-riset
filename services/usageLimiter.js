@@ -95,7 +95,7 @@ function getMemberApiToken() {
 function warnDevUnlimitedProduction() {
   if (devUnlimitedProductionWarningShown) return;
   devUnlimitedProductionWarningShown = true;
-  console.warn("[startup] DEV_UNLIMITED=true aktif di production. Bypass dev dinonaktifkan otomatis, app tetap berjalan.");
+  console.warn("[usage] DEV_UNLIMITED ignored in production; app will continue in guest/member mode.");
 }
 
 function dayKey() {

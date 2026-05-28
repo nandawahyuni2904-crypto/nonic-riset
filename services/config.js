@@ -20,7 +20,7 @@ function validateConfig() {
   const warnings = [];
   if (!process.env.YOUTUBE_API_KEY) warnings.push("YOUTUBE_API_KEY belum diisi. Riset YouTube akan gagal.");
   if (!String(process.env.MEMBER_API_TOKEN || "").trim() && config.isProduction) warnings.push("MEMBER_API_TOKEN belum diisi. Member mode dinonaktifkan, app tetap berjalan sebagai guest mode.");
-  if (process.env.DEV_UNLIMITED === "true" && config.isProduction) warnings.push("DEV_UNLIMITED=true aktif di production. Bypass dev akan diabaikan otomatis, app tetap berjalan.");
+  if (process.env.DEV_UNLIMITED === "true" && config.isProduction) console.warn("[config] DEV_UNLIMITED ignored in production; app will continue in guest/member mode.");
   return { config, missing, warnings, ok: missing.length === 0 };
 }
 
