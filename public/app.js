@@ -195,7 +195,7 @@ function setStatusTone(element, tone = "info") {
 }
 
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY) || "light";
+  const saved = localStorage.getItem(THEME_KEY) || "dark";
   document.documentElement.dataset.theme = saved;
   updateThemeButton(saved);
 }
