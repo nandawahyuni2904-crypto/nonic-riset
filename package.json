@@ -4,6 +4,7 @@
   "private": true,
   "description": "Local dashboard to discover product trend signals from YouTube and TikTok-ready data.",
   "scripts": {
+    "build": "node scripts/vercel-build.js",
     "dev": "set NODE_ENV=development&& set DEV_UNLIMITED=true&& node server.js",
     "start": "node server.js",
     "prod": "set NODE_ENV=production&& node server.js",
