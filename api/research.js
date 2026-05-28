@@ -5,7 +5,7 @@ const { labelScore } = require("../services/scoring");
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
   try {
@@ -15,8 +15,8 @@ module.exports = async function handler(req, res) {
     const category = cleanText(body.category);
     const resolvedKeyword = resolveKeyword({ mode, keyword, category });
 
-    if (mode === "manual" && !keyword) return res.status(400).json({ error: "Keyword wajib diisi." });
-    if (mode === "category" && !category) return res.status(400).json({ error: "Kategori wajib dipilih." });
+    if (mode === "manual" && !keyword) return res.status(400).json({ ok: false, error: "Keyword wajib diisi." });
+    if (mode === "category" && !category) return res.status(400).json({ ok: false, error: "Kategori wajib dipilih." });
 
     const shortsResult = await fetchYouTubeShortsIndonesia({
       keyword: resolvedKeyword,
@@ -30,6 +30,7 @@ module.exports = async function handler(req, res) {
     const opportunities = buildOpportunities(shorts, products);
 
     return res.status(200).json({
+      ok: true,
       mode,
       keyword: mode === "manual" ? keyword : "",
       category: mode === "category" ? category : "",
@@ -54,6 +55,7 @@ module.exports = async function handler(req, res) {
       requestUrl: error.requestUrl
     });
     return res.status(error.status || 500).json({
+      ok: false,
       error: error.message || "Riset gagal.",
       code: error.code || "RESEARCH_FAILED",
       detail: error.response || undefined,

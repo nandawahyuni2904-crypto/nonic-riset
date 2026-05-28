@@ -311,7 +311,14 @@ els.productSearch.addEventListener("click", async () => {
   setTotals(0, 0, 0);
 
   try {
-    const data = await fetchJson("/api/research", {
+    const researchEndpoint = "/api/research";
+    console.log("[Cari Peluang Viral] Fetch endpoint", {
+      url: researchEndpoint,
+      mode,
+      keyword: mode === "manual" ? keyword : "",
+      category: mode === "category" ? category : ""
+    });
+    const data = await fetchJson(researchEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -889,6 +896,12 @@ async function fetchJson(url, options) {
 
   const contentType = response.headers.get("content-type") || "";
   const text = await response.text();
+  console.log("[fetchJson] Response", {
+    url,
+    status: response.status,
+    ok: response.ok,
+    contentType
+  });
   let data = null;
   if (contentType.includes("application/json")) {
     try {
@@ -904,6 +917,12 @@ async function fetchJson(url, options) {
       throw new Error("Server mengirim JSON tidak valid.");
     }
   } else {
+    console.log("[fetchJson] Raw non-JSON response", {
+      url,
+      status: response.status,
+      contentType,
+      rawText: text
+    });
     console.error("[fetchJson] Non-JSON response", {
       url,
       status: response.status,
