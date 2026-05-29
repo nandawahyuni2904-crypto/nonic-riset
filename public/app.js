@@ -34,7 +34,14 @@ const els = {
   tiktokTotal: document.querySelector("#tiktokTotal"),
   youtubeTotal: document.querySelector("#youtubeTotal"),
   shopeeTotal: document.querySelector("#shopeeTotal"),
+  amsStatusTop: document.querySelector("#amsStatusTop"),
+  avgViewsTop: document.querySelector("#avgViewsTop"),
+  floatingOpportunities: document.querySelector("#floatingOpportunities"),
+  floatingHotProducts: document.querySelector("#floatingHotProducts"),
+  floatingAvgViews: document.querySelector("#floatingAvgViews"),
+  floatingAmsStatus: document.querySelector("#floatingAmsStatus"),
   avgViews: document.querySelector("#avgViews"),
+  actionPanel: document.querySelector("#keyword-insights"),
   avgEngagement: document.querySelector("#avgEngagement"),
   topKeyword: document.querySelector("#topKeyword"),
   copyKeywords: document.querySelector("#copyKeywords"),
@@ -62,6 +69,7 @@ const els = {
   trendTimeline: document.querySelector("#trendTimeline"),
   heatmapCount: document.querySelector("#heatmapCount"),
   categoryHeatmap: document.querySelector("#categoryHeatmap"),
+  trendPanel: document.querySelector("#viral-discovery"),
   emergingCount: document.querySelector("#emergingCount"),
   emergingProducts: document.querySelector("#emergingProducts"),
   historyCount: document.querySelector("#historyCount"),
@@ -146,6 +154,8 @@ function updateConnectionBadges(status, shopeeStatus, usage) {
   setBadge(els.shopeeBadge, shopeeConnected ? "Shopee Connected" : shopeeWaiting ? "Waiting AMS" : "Shopee Setup", shopeeConnected ? "success" : "warning");
   if (els.youtubeKpiStatus) els.youtubeKpiStatus.textContent = youtubeReady ? "Ready" : "Setup";
   if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = shopeeConnected ? "Connected" : "Waiting AMS";
+  if (els.amsStatusTop) els.amsStatusTop.textContent = shopeeConnected ? "Connected" : shopeeWaiting ? "Waiting" : "Setup";
+  if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = shopeeConnected ? "Connected" : shopeeWaiting ? "Waiting AMS" : "Setup";
   els.status.textContent = quotaText;
 }
 
@@ -309,6 +319,7 @@ els.productSearch.addEventListener("click", async () => {
   els.youtubeRows.innerHTML = skeletonCards(6);
   els.shopeeRows.innerHTML = skeletonCards(3);
   setTotals(0, 0, 0);
+  updateHotSummary([]);
 
   try {
     const researchEndpoint = "/api/research";
@@ -365,6 +376,7 @@ function renderResearch(data) {
   renderTopStats(stats);
   renderTrendIntelligence(data.analyticsSummary || stats);
   setTotals(opportunities.length, shorts.length, products.length);
+  updateHotSummary(opportunities);
   updateShopeeTrendBadge(products.length);
   const shopeeNote = products.length ? "" : " Menunggu approval AMS Shopee.";
   setResearchStatus(formatResearchMessage(data.message || `Selesai. ${opportunities.length} peluang, ${shorts.length} video viral, ${products.length} trends Shopee.${shopeeNote}`), shorts.length || opportunities.length ? "success" : "warning");
@@ -374,10 +386,14 @@ function updateShopeeTrendBadge(count) {
   if (count > 0) {
     setBadge(els.shopeeBadge, "Shopee Trends Ready", "success");
     if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Active";
+    if (els.amsStatusTop) els.amsStatusTop.textContent = "Active";
+    if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = "Active";
     return;
   }
   setBadge(els.shopeeBadge, "Menunggu AMS", "warning");
   if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Menunggu AMS";
+  if (els.amsStatusTop) els.amsStatusTop.textContent = "Waiting";
+  if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = "Waiting AMS";
 }
 
 function formatResearchMessage(message) {
@@ -844,7 +860,8 @@ function renderOpenButton(url, label) {
 function setTotals(tiktok, youtube, shopee) {
   els.tiktokTotal.textContent = formatNumber(tiktok);
   els.youtubeTotal.textContent = formatNumber(youtube);
-  els.shopeeTotal.textContent = formatNumber(shopee);
+  if (els.shopeeTotal) els.shopeeTotal.textContent = formatNumber(shopee);
+  if (els.floatingOpportunities) els.floatingOpportunities.textContent = formatNumber(tiktok);
 }
 
 function formatDate(value) {
@@ -1038,7 +1055,12 @@ function confidenceLabel(value) {
 }
 
 function renderTopStats(stats) {
-  els.avgViews.textContent = formatNumber(stats.averageViews || 0);
+  const averageViews = formatNumber(stats.averageViews || 0);
+  const hasStats = Number(stats.averageViews || 0) > 0 || Number(stats.averageEngagement || 0) > 0 || Boolean(stats.topKeyword);
+  if (els.actionPanel) els.actionPanel.hidden = !hasStats;
+  els.avgViews.textContent = averageViews;
+  if (els.avgViewsTop) els.avgViewsTop.textContent = averageViews;
+  if (els.floatingAvgViews) els.floatingAvgViews.textContent = averageViews;
   els.avgEngagement.textContent = formatChance((stats.averageEngagement || 0) * 100);
   els.topKeyword.textContent = stats.topKeyword || "-";
 }
@@ -1048,6 +1070,8 @@ function renderTrendIntelligence(stats = {}) {
   const timeline = stats.uploadDistributionByHour || [];
   const heatmap = stats.trendCategoryHeatmap || [];
   const farming = stats.trendFarmingChannels || [];
+  const hasData = timeline.length || heatmap.length || farming.length || stats.topUploadHour || stats.topProductAngle;
+  if (els.trendPanel) els.trendPanel.hidden = !hasData;
   els.topUploadHour.textContent = stats.topUploadHour || "-";
   els.topProductAngle.textContent = stats.topProductAngle || "-";
   els.trendFarmingCount.textContent = formatNumber(farming.length || 0);
@@ -1060,6 +1084,11 @@ function renderTrendIntelligence(stats = {}) {
   els.categoryHeatmap.innerHTML = heatmap.length ? heatmap.map((item) => (
     `<div class="heat-cell" style="--heat:${Number(item.intensity || 0)}"><span>${escapeHtml(item.category)}</span><strong>${formatNumber(item.count)}</strong></div>`
   )).join("") : emptyMini("Belum ada heatmap.");
+}
+
+function updateHotSummary(opportunities = []) {
+  const hot = opportunities.filter((item) => productStatusLabel({ ...(item.short || {}), ...item }) === "HOT").length;
+  if (els.floatingHotProducts) els.floatingHotProducts.textContent = formatNumber(hot);
 }
 
 async function loadEmergingProducts() {

@@ -106,9 +106,15 @@
           </article>
           <article class="kpi-card kpi-shopee">
             <div class="kpi-icon" aria-hidden="true">S</div>
-            <span>Trends Shopee</span>
-            <strong id="shopeeTotal">0</strong>
-            <p><em id="shopeeKpiStatus">Checking</em> Trends ditemukan</p>
+            <span>AMS Status</span>
+            <strong id="amsStatusTop">Checking</strong>
+            <p><em id="shopeeKpiStatus">Checking</em> Trends Shopee</p>
+          </article>
+          <article class="kpi-card kpi-average">
+            <div class="kpi-icon" aria-hidden="true">AVG</div>
+            <span>Average Views</span>
+            <strong id="avgViewsTop">0</strong>
+            <p><em>Realtime</em> Rata-rata video</p>
           </article>
         </section>
 
@@ -140,7 +146,7 @@
           </div>
         </section>
 
-        <section class="action-panel" id="keyword-insights" aria-label="Aksi hasil riset">
+        <section class="action-panel" id="keyword-insights" aria-label="Aksi hasil riset" hidden>
           <div class="mini-stat">
             <span>Rata-rata views</span>
             <strong id="avgViews">0</strong>
@@ -177,7 +183,7 @@
           </label>
         </section>
 
-        <section class="intel-panel" id="viral-discovery" aria-label="Trend intelligence">
+        <section class="intel-panel" id="viral-discovery" aria-label="Trend intelligence" hidden>
           <div class="intel-card">
             <span>Peak posting hour</span>
             <strong id="topUploadHour">-</strong>
@@ -339,6 +345,24 @@
       <a href="#viral-discovery">Insights</a>
       <a href="#analytics">Stats</a>
     </nav>
+    <section class="floating-summary-bar" id="floatingSummary" aria-label="Research summary">
+      <div>
+        <span>Opportunities Found</span>
+        <strong id="floatingOpportunities">0</strong>
+      </div>
+      <div>
+        <span>HOT Products</span>
+        <strong id="floatingHotProducts">0</strong>
+      </div>
+      <div>
+        <span>Average Views</span>
+        <strong id="floatingAvgViews">0</strong>
+      </div>
+      <div>
+        <span>AMS Status</span>
+        <strong id="floatingAmsStatus">Checking</strong>
+      </div>
+    </section>
     <script src="/app.js"></script>
   </body>
 </html>
