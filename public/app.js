@@ -554,26 +554,40 @@ function renderOpportunityCard(item) {
   const short = item.short || {};
   const merged = { ...short, ...item };
   const pending = !product;
+  const productTitle = product?.name || item.productTitle || item.keyword || item.matchedKeyword || short.estimated_product_type || short.title || "Discovered product";
+  const videoTitle = short.title || item.title || productTitle;
+  const youtubeUrl = short.url || item.url || "";
+  const viralScore = item.trend_score_final ?? item.viral_score ?? item.chance ?? item.score ?? short.viral_score ?? short.score;
   return `
-    <article class="result-card">
-      ${renderImage(short.thumbnail || item.image || product?.image, short.title || item.title || product?.name, "Shorts", short)}
+    <article class="result-card product-result-card">
+      <div class="dual-thumb">
+        <div class="media-panel product-media">
+          <span>Product</span>
+          ${renderImage(product?.image || item.productImage || item.image, productTitle, "Product", product || item)}
+        </div>
+        <div class="media-panel video-media">
+          <span>Video</span>
+          ${renderImage(short.thumbnail || item.thumbnail, videoTitle, "Video", short)}
+        </div>
+      </div>
       <div class="result-body">
-        <div class="card-topline">${renderOpportunityBadge(merged)}<span class="score-pill">${formatChance(item.chance ?? item.score)} peluang</span></div>
-        <h3>${escapeHtml(short.title || item.title || "Peluang viral")}</h3>
+        <div class="card-topline">${renderProductStatusBadge(merged)}<span class="score-pill">${formatChance(viralScore)} viral score</span></div>
+        <h3>${escapeHtml(productTitle)}</h3>
         ${renderIndicators(merged)}
         <p class="meta">Keyword produk: ${escapeHtml(item.keyword || item.matchedKeyword || "-")}</p>
-        <p class="price">${escapeHtml(product?.name || "Menunggu validasi marketplace")}</p>
+        <p class="price">${escapeHtml(pending ? "Menunggu validasi marketplace" : product?.price || product?.name || "Produk tervalidasi")}</p>
         ${renderStats([
-          ["Terjual", product?.items_sold ?? product?.soldCount ?? "-"],
-          ["Order", product?.orders ?? "-"],
-          ["ROI", product?.roi ?? "-"],
-          ["Peluang", formatChance(item.chance ?? item.score)]
+          ["Views", short.views ?? item.views ?? 0],
+          ["Upload age", formatUploadAge(short.publishedAt || item.publishedAt)],
+          ["Engagement", formatChance(Number(short.engagementRate ?? item.engagementRate ?? 0) * 100)],
+          ["Viral score", formatChance(viralScore)]
         ])}
         ${renderBreakdown(merged)}
         ${renderWhyViral(merged)}
         <p class="meta">${escapeHtml(pending ? "Menunggu validasi marketplace" : item.reason || item.matchedShortTitle || "")}</p>
         <div class="button-row quick-actions">
-          ${product ? renderOpenButton(product.url, "Buka Produk") : renderOpenButton(short.url || item.url, "Buka Shorts")}
+          ${youtubeUrl ? renderOpenButton(youtubeUrl, "YouTube") : ""}
+          ${product ? renderOpenButton(product.url, "Buka Produk") : ""}
           ${renderQuickActions(merged)}
         </div>
       </div>
@@ -654,6 +668,17 @@ function renderBadge(label) {
 
 function renderOpportunityBadge(item) {
   return renderBadge(item.opportunity_score_label || item.confidence_label || item.label || confidenceLabel(item.product_confidence));
+}
+
+function renderProductStatusBadge(item) {
+  return renderBadge(productStatusLabel(item));
+}
+
+function productStatusLabel(item) {
+  const score = Number(item.product_confidence ?? item.trend_score_final ?? item.viral_score ?? item.chance ?? item.score ?? 0);
+  if (score >= 80) return "HOT";
+  if (score >= 60) return "WARM";
+  return "EARLY";
 }
 
 function renderIndicators(item) {
@@ -825,6 +850,22 @@ function setTotals(tiktok, youtube, shopee) {
 function formatDate(value) {
   if (!value) return "-";
   return new Date(value).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+}
+
+function formatUploadAge(value) {
+  if (!value) return "-";
+  const time = new Date(value).getTime();
+  if (!Number.isFinite(time)) return "-";
+  const diffMs = Date.now() - time;
+  if (diffMs < 0) return "baru";
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 60) return `${Math.max(1, minutes)}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours}j`;
+  const days = Math.floor(hours / 24);
+  if (days < 60) return `${days}h`;
+  const months = Math.floor(days / 30);
+  return `${months}bln`;
 }
 
 async function loadCategories() {
