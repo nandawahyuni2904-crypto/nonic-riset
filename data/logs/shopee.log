@@ -257,3 +257,7 @@
 2026-05-26T02:56:22.376Z ams_product_performance_error {"status":403,"error":"This app type has no permission to this API.","response":"error_api_permission"}
 2026-05-26T05:05:43.805Z ams_product_performance_request {"shopId":161893879,"params":{"period_type":"Last30d","order_type":"ConfirmedOrder","channel":"AllChannel","page_no":1,"page_size":20},"environment":"production"}
 2026-05-26T05:05:44.001Z ams_product_performance_error {"status":403,"error":"Invalid partner_id, please have a check.","response":"invalid_partner_id"}
+2026-05-28T19:23:51.213Z token_refresh_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-28T19:23:51.217Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-28T19:23:51.896Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}
+2026-05-28T19:23:51.898Z status_refresh_skipped {"error":"Wrong sign.","code":""}

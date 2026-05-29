@@ -494,3 +494,14 @@
 2026-05-26T05:06:02.184Z POST /api/research 200 20156ms
 2026-05-26T05:06:02.235Z GET /api/quota-status 200 2ms
 2026-05-26T05:06:02.265Z GET /api/cache-status 200 1ms
+2026-05-28T19:23:50.910Z GET / 200 5ms
+2026-05-28T19:23:50.953Z GET /styles.css 200 0ms
+2026-05-28T19:23:50.966Z GET /app.js 200 1ms
+2026-05-28T19:23:51.160Z GET /api/status 200 2ms
+2026-05-28T19:23:51.194Z GET /api/usage-status 200 4ms
+2026-05-28T19:23:51.199Z GET /favicon.ico 200 0ms
+2026-05-28T19:23:51.902Z GET /api/shopee/status 200 700ms
+2026-05-28T19:23:51.913Z GET /api/categories 200 1ms
+2026-05-28T19:23:52.009Z GET /api/cache-status 200 86ms
+2026-05-28T19:23:52.020Z GET /api/quota-status 200 2ms
+2026-05-28T19:23:57.030Z GET /api/trending/discover 200 5005ms
