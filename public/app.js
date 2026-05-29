@@ -576,9 +576,13 @@ function renderOpportunityCard(item, index = 0) {
   const productTitle = product?.name || item.productTitle || item.keyword || item.matchedKeyword || short.estimated_product_type || short.title || "Discovered product";
   const videoTitle = short.title || item.title || productTitle;
   const youtubeUrl = short.url || item.url || "";
+  const shopeeUrl = `https://shopee.co.id/search?keyword=${encodeURIComponent(item.keyword || item.matchedKeyword || productTitle)}`;
+  const cardKeyword = item.keyword || item.matchedKeyword || productTitle;
   const viralScore = item.trend_score_final ?? item.viral_score ?? item.chance ?? item.score ?? short.viral_score ?? short.score;
   return `
     <article class="result-card product-result-card" data-detail-source="tiktok" data-detail-index="${index}" role="button" tabindex="0">
+      <span class="rank-badge">#${index + 1}</span>
+      <span class="card-score-badge">${formatChance(viralScore)}</span>
       <div class="dual-thumb">
         <div class="media-panel product-media">
           <span>Product</span>
@@ -590,7 +594,7 @@ function renderOpportunityCard(item, index = 0) {
         </div>
       </div>
       <div class="result-body">
-        <div class="card-topline">${renderProductStatusBadge(merged)}<span class="score-pill">${formatChance(viralScore)} viral score</span></div>
+        <div class="card-topline">${renderProductStatusBadge(merged)}<span class="score-pill">Viral Score</span></div>
         <h3>${escapeHtml(productTitle)}</h3>
         ${renderStats([
           ["Views", short.views ?? item.views ?? 0],
@@ -600,9 +604,14 @@ function renderOpportunityCard(item, index = 0) {
         ])}
         <p class="meta">Keyword: ${escapeHtml(item.keyword || item.matchedKeyword || "-")}</p>
         <div class="button-row quick-actions">
-          <a class="mini-action" href="https://shopee.co.id/search?keyword=${encodeURIComponent(item.keyword || item.matchedKeyword || productTitle)}" target="_blank" rel="noreferrer">Shopee</a>
-          ${youtubeUrl ? renderOpenButton(youtubeUrl, "YouTube") : ""}
-          <button class="mini-action" type="button" data-copy-keyword="${escapeHtml(item.keyword || item.matchedKeyword || productTitle)}">Copy Keyword</button>
+          ${youtubeUrl ? renderOpenButton(youtubeUrl, "Lihat Video") : ""}
+          <a class="mini-action" href="${escapeHtml(shopeeUrl)}" target="_blank" rel="noreferrer">Cari di Shopee</a>
+          <details class="card-actions-menu">
+            <summary aria-label="More actions">...</summary>
+            <div>
+              <button type="button" data-copy-keyword="${escapeHtml(cardKeyword)}">Copy Keyword</button>
+            </div>
+          </details>
         </div>
       </div>
     </article>
@@ -852,7 +861,7 @@ function renderStats(stats) {
 }
 
 function renderOpenButton(url, label) {
-  return url ? `<a class="open-button" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>` : "-";
+  return url ? `<a class="open-button" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>` : "";
 }
 
 function setTotals(tiktok, youtube, shopee) {
