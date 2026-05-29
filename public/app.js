@@ -79,7 +79,9 @@ const els = {
   loadingEta: document.querySelector("#loadingEta"),
   progressBar: document.querySelector("#progressBar"),
   toggleKeywordInsight: document.querySelector("#toggleKeywordInsight"),
-  keywordInsightPanel: document.querySelector("#keywordInsightPanel")
+  keywordInsightPanel: document.querySelector("#keywordInsightPanel"),
+  productDetailModal: document.querySelector("#productDetailModal"),
+  productModalContent: document.querySelector("#productModalContent")
 };
 let lastResearchData = null;
 let currentShorts = [];
@@ -466,7 +468,7 @@ function renderSourcePage(source) {
   const controls = renderShowMore(source, items.length, state.visible);
   if (source === "tiktok") {
     els.tiktokCount.textContent = `${items.length} match`;
-    renderGrid(els.tiktokRows, items.length ? visibleItems.map((item) => renderOpportunityCard(item)).join("") + controls : emptyMessage(error || "Belum ada peluang viral.", "Coba keyword produk seperti gelas aesthetic, rak sepatu, atau gadget murah."));
+    renderGrid(els.tiktokRows, items.length ? visibleItems.map((item, index) => renderOpportunityCard(item, index)).join("") + controls : emptyMessage(error || "Belum ada peluang viral.", "Coba keyword produk seperti gelas aesthetic, rak sepatu, atau gadget murah."));
   }
   if (source === "youtube") {
     els.youtubeCount.textContent = `${items.length} video`;
@@ -565,17 +567,16 @@ function renderProductResearch(data) {
   renderSource("shopee", shopeeItems, "");
 }
 
-function renderOpportunityCard(item) {
+function renderOpportunityCard(item, index = 0) {
   const product = item.topProduct || item.product || null;
   const short = item.short || {};
   const merged = { ...short, ...item };
-  const pending = !product;
   const productTitle = product?.name || item.productTitle || item.keyword || item.matchedKeyword || short.estimated_product_type || short.title || "Discovered product";
   const videoTitle = short.title || item.title || productTitle;
   const youtubeUrl = short.url || item.url || "";
   const viralScore = item.trend_score_final ?? item.viral_score ?? item.chance ?? item.score ?? short.viral_score ?? short.score;
   return `
-    <article class="result-card product-result-card">
+    <article class="result-card product-result-card" data-detail-source="tiktok" data-detail-index="${index}" role="button" tabindex="0">
       <div class="dual-thumb">
         <div class="media-panel product-media">
           <span>Product</span>
@@ -589,22 +590,15 @@ function renderOpportunityCard(item) {
       <div class="result-body">
         <div class="card-topline">${renderProductStatusBadge(merged)}<span class="score-pill">${formatChance(viralScore)} viral score</span></div>
         <h3>${escapeHtml(productTitle)}</h3>
-        ${renderIndicators(merged)}
-        <p class="meta">Keyword produk: ${escapeHtml(item.keyword || item.matchedKeyword || "-")}</p>
-        <p class="price">${escapeHtml(pending ? "Menunggu validasi marketplace" : product?.price || product?.name || "Produk tervalidasi")}</p>
         ${renderStats([
           ["Views", short.views ?? item.views ?? 0],
-          ["Upload age", formatUploadAge(short.publishedAt || item.publishedAt)],
+          ["Age", formatUploadAge(short.publishedAt || item.publishedAt)],
           ["Engagement", formatChance(Number(short.engagementRate ?? item.engagementRate ?? 0) * 100)],
-          ["Viral score", formatChance(viralScore)]
+          ["Score", formatChance(viralScore)]
         ])}
-        ${renderBreakdown(merged)}
-        ${renderWhyViral(merged)}
-        <p class="meta">${escapeHtml(pending ? "Menunggu validasi marketplace" : item.reason || item.matchedShortTitle || "")}</p>
+        <p class="meta">Keyword: ${escapeHtml(item.keyword || item.matchedKeyword || "-")}</p>
         <div class="button-row quick-actions">
           ${youtubeUrl ? renderOpenButton(youtubeUrl, "YouTube") : ""}
-          ${product ? renderOpenButton(product.url, "Buka Produk") : ""}
-          ${renderQuickActions(merged)}
         </div>
       </div>
     </article>
@@ -1346,6 +1340,25 @@ document.addEventListener("click", (event) => {
   renderSourcePage(source);
 });
 
+document.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-detail-source]");
+  if (!card || event.target.closest("a, button, input, select, textarea")) return;
+  openProductDetail(card.dataset.detailSource, Number(card.dataset.detailIndex || 0));
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeProductDetail();
+  if (event.key !== "Enter") return;
+  const card = event.target.closest?.("[data-detail-source]");
+  if (!card) return;
+  openProductDetail(card.dataset.detailSource, Number(card.dataset.detailIndex || 0));
+});
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-close-product-modal]")) return;
+  closeProductDetail();
+});
+
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-copy-keyword]");
   if (!button) return;
@@ -1368,6 +1381,69 @@ if (els.toggleKeywordInsight) {
     els.keywordInsightPanel.hidden = nextHidden;
     els.toggleKeywordInsight.textContent = nextHidden ? "Lihat insight keyword" : "Sembunyikan insight keyword";
   });
+}
+
+function openProductDetail(source, index) {
+  const item = sectionState[source]?.items?.[index];
+  if (!item || !els.productDetailModal || !els.productModalContent) return;
+  els.productModalContent.innerHTML = renderProductDetail(item);
+  els.productDetailModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closeProductDetail() {
+  if (!els.productDetailModal) return;
+  els.productDetailModal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+function renderProductDetail(item) {
+  const product = item.topProduct || item.product || null;
+  const short = item.short || {};
+  const merged = { ...short, ...item };
+  const productTitle = product?.name || item.productTitle || item.keyword || item.matchedKeyword || short.estimated_product_type || short.title || "Discovered product";
+  const videoTitle = short.title || item.title || productTitle;
+  const youtubeUrl = short.url || item.url || "";
+  const viralScore = item.trend_score_final ?? item.viral_score ?? item.chance ?? item.score ?? short.viral_score ?? short.score;
+  return `
+    <div class="detail-hero">
+      <div class="detail-media">
+        ${renderImage(product?.image || item.productImage || item.image, productTitle, "Product", product || item)}
+        ${renderImage(short.thumbnail || item.thumbnail, videoTitle, "Video", short)}
+      </div>
+      <div class="detail-summary">
+        <div class="card-topline">${renderProductStatusBadge(merged)}<span class="score-pill">${formatChance(viralScore)} viral score</span></div>
+        <h2 id="productModalTitle">${escapeHtml(productTitle)}</h2>
+        <p>${escapeHtml(videoTitle)}</p>
+        ${renderStats([
+          ["Views", short.views ?? item.views ?? 0],
+          ["Upload age", formatUploadAge(short.publishedAt || item.publishedAt)],
+          ["Engagement", formatChance(Number(short.engagementRate ?? item.engagementRate ?? 0) * 100)],
+          ["Viral score", formatChance(viralScore)]
+        ])}
+        <div class="button-row quick-actions">
+          ${youtubeUrl ? renderOpenButton(youtubeUrl, "Open YouTube") : ""}
+          ${product?.url ? renderOpenButton(product.url, "Open Product") : ""}
+          ${renderQuickActions(merged)}
+        </div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <section>
+        <h3>Product intelligence</h3>
+        <p><strong>Keyword:</strong> ${escapeHtml(item.keyword || item.matchedKeyword || "-")}</p>
+        <p><strong>Marketplace:</strong> ${escapeHtml(product?.name || "Menunggu validasi marketplace")}</p>
+        <p><strong>Reason:</strong> ${escapeHtml(item.reason || item.matchedShortTitle || "Data detail tersedia setelah hasil lengkap.")}</p>
+      </section>
+      <section>
+        <h3>Signals</h3>
+        ${renderIndicators(merged)}
+        ${renderHooks(merged)}
+      </section>
+    </div>
+    ${renderBreakdown(merged)}
+    ${renderWhyViral(merged)}
+  `;
 }
 
 function csvCell(value) {

@@ -5195,3 +5195,374 @@ body::after {
     border-radius: 16px;
   }
 }
+
+/* Dense product discovery workspace */
+.sidebar-note,
+#recentSearchChips,
+.floating-summary-bar,
+.results-tabs,
+.data-section[data-section="youtube"],
+.data-section[data-section="affiliate"],
+.action-panel,
+.intel-panel,
+.keyword-panel,
+#keywordInsightPanel,
+.history-section {
+  display: none !important;
+}
+
+.app-sidebar {
+  padding-bottom: 16px;
+}
+
+.shell {
+  gap: 8px;
+  padding-bottom: 28px;
+}
+
+.topbar {
+  min-height: 44px;
+}
+
+.kpi-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kpi-card {
+  min-height: 70px;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.kpi-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.kpi-card span {
+  font-size: 10px;
+}
+
+.kpi-card strong {
+  font-size: clamp(18px, 2.2vw, 25px);
+}
+
+.kpi-card p {
+  font-size: 10px;
+}
+
+.search-hero {
+  grid-template-columns: minmax(300px, 0.78fr) minmax(220px, 1fr) 160px;
+  padding: 10px;
+  gap: 8px;
+  border-radius: 14px;
+}
+
+.segmented-control label,
+.search-hero input,
+.search-hero select,
+#productSearch {
+  min-height: 38px;
+}
+
+.segmented-control label {
+  padding: 9px 8px;
+  font-size: 11px;
+}
+
+.search-hero label {
+  font-size: 10px;
+}
+
+.search-assist {
+  display: none;
+}
+
+.research-status {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.filter-panel {
+  top: 62px;
+  gap: 6px;
+  padding: 7px;
+  border-radius: 14px;
+}
+
+.filter-panel label,
+.filter-panel select {
+  min-height: 30px;
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.data-section[data-section="opportunities"] {
+  margin-top: 0;
+  padding: 10px;
+  border-radius: 16px;
+}
+
+.section-heading {
+  margin-bottom: 8px;
+}
+
+.section-heading h2 {
+  font-size: 18px;
+}
+
+.section-heading span {
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.result-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.product-result-card {
+  min-height: 0;
+  cursor: pointer;
+}
+
+.product-result-card .dual-thumb {
+  grid-template-columns: 1fr 0.72fr;
+  gap: 6px;
+  padding: 8px 8px 0;
+}
+
+.product-result-card .media-panel {
+  min-height: 96px;
+  border-radius: 12px;
+}
+
+.product-result-card .media-panel .thumb {
+  min-height: 96px;
+}
+
+.media-panel > span {
+  top: 6px;
+  left: 6px;
+  padding: 4px 6px;
+  font-size: 8px;
+}
+
+.product-result-card .result-body {
+  gap: 7px;
+  padding: 10px;
+}
+
+.product-result-card .card-topline {
+  gap: 6px;
+}
+
+.product-result-card .badge,
+.product-result-card .score-pill {
+  padding: 5px 7px;
+  font-size: 9px;
+}
+
+.product-result-card h3 {
+  font-size: 14px;
+  line-height: 1.22;
+  min-height: 34px;
+}
+
+.product-result-card .meta {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-result-card .stat-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.product-result-card .stat-grid div {
+  min-height: 42px;
+  padding: 7px;
+  border-radius: 10px;
+}
+
+.product-result-card .stat-grid dt {
+  font-size: 8px;
+}
+
+.product-result-card .stat-grid dd {
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.product-result-card .button-row {
+  grid-template-columns: 1fr;
+}
+
+.product-result-card .open-button {
+  min-height: 32px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.empty-state {
+  min-height: 118px;
+  padding: 18px;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.product-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.product-modal[hidden] {
+  display: none !important;
+}
+
+.product-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.product-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(980px, 100%);
+  max-height: min(88vh, 820px);
+  overflow: auto;
+  padding: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04)),
+    rgba(8, 14, 32, 0.94);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  border-radius: 22px;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55), 0 0 44px rgba(45, 212, 191, 0.16);
+}
+
+.product-modal__close {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  color: #dffdfa;
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.detail-hero {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.detail-media {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.detail-media .thumb {
+  width: 100%;
+  min-height: 230px;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+}
+
+.detail-summary h2 {
+  margin: 12px 0 8px;
+  color: #ffffff;
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.05;
+}
+
+.detail-summary p,
+.detail-grid p {
+  color: #a8b5d4;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.detail-grid section {
+  padding: 14px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+}
+
+.detail-grid h3 {
+  margin-bottom: 10px;
+  color: #dffdfa;
+}
+
+@media (max-width: 1280px) {
+  .result-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .result-grid,
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-hero,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .result-grid,
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-result-card .dual-thumb {
+    grid-template-columns: 1fr 0.72fr;
+  }
+
+  .product-result-card .media-panel,
+  .product-result-card .media-panel .thumb {
+    min-height: 112px;
+  }
+
+  .product-modal {
+    padding: 10px;
+  }
+
+  .detail-media {
+    grid-template-columns: 1fr;
+  }
+}

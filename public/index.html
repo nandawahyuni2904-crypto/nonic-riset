@@ -169,10 +169,10 @@
         <p class="cache-note" id="quotaStatus">Quota belum dicek.</p>
 
         <section class="filter-panel" aria-label="Filter dan urutan video">
-          <label><input id="filterHot" type="checkbox"> HOT only</label>
-          <label><input id="filterConfidence" type="checkbox"> Confidence &gt; 70</label>
-          <label><input id="filterViews" type="checkbox"> Views &gt; 100k</label>
-          <label><input id="filterRecent" type="checkbox"> Upload &lt; 30 hari</label>
+          <label><input id="filterHot" type="checkbox"> HOT</label>
+          <label><input id="filterConfidence" type="checkbox"> Confidence</label>
+          <label><input id="filterViews" type="checkbox"> Views</label>
+          <label><input id="filterRecent" type="checkbox"> Upload age</label>
           <label>
             Sort
             <select id="sortMode">
@@ -363,6 +363,13 @@
         <strong id="floatingAmsStatus">Checking</strong>
       </div>
     </section>
+    <div class="product-modal" id="productDetailModal" hidden>
+      <div class="product-modal__backdrop" data-close-product-modal></div>
+      <article class="product-modal__panel" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+        <button class="product-modal__close" type="button" data-close-product-modal aria-label="Close detail">×</button>
+        <div id="productModalContent"></div>
+      </article>
+    </div>
     <script src="/app.js"></script>
   </body>
 </html>
