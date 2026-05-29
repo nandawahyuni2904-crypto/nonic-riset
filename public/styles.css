@@ -5566,3 +5566,199 @@ body.modal-open {
     grid-template-columns: 1fr;
   }
 }
+
+/* SaaS density polish: Minea/Kalodata/Pipiads style */
+.app-sidebar {
+  width: 232px;
+  padding: 14px 12px;
+}
+
+.app-main {
+  margin-left: 232px;
+}
+
+.brand-mark {
+  min-height: 38px;
+  margin-bottom: 12px;
+  padding: 4px;
+}
+
+.brand-mark span {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.brand-mark strong {
+  font-size: 14px;
+}
+
+.side-nav {
+  gap: 3px;
+}
+
+.side-nav a {
+  min-height: 34px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.shell {
+  width: min(1480px, calc(100% - 28px));
+  gap: 6px;
+  padding-top: 8px;
+}
+
+.topbar {
+  min-height: 40px;
+  padding: 6px 9px 6px 12px;
+}
+
+.kpi-grid {
+  gap: 7px;
+}
+
+.kpi-card {
+  min-height: 64px;
+  padding: 9px;
+}
+
+.search-hero {
+  padding: 9px;
+  gap: 7px;
+}
+
+.filter-panel {
+  top: 54px;
+  gap: 5px;
+  padding: 4px 6px;
+  border-radius: 12px;
+}
+
+.filter-panel label,
+.filter-panel select {
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.filter-panel input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+}
+
+.research-status {
+  padding: 6px 9px;
+}
+
+.data-section[data-section="opportunities"] {
+  padding: 8px;
+}
+
+.result-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+@media (min-width: 1500px) {
+  .result-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.product-result-card .dual-thumb {
+  grid-template-columns: 1fr;
+  padding: 7px 7px 0;
+}
+
+.product-result-card .video-media {
+  display: none;
+}
+
+.product-result-card .media-panel {
+  min-height: 138px;
+}
+
+.product-result-card .media-panel .thumb {
+  min-height: 138px;
+}
+
+.product-result-card .result-body {
+  gap: 6px;
+  padding: 9px;
+}
+
+.product-result-card h3 {
+  min-height: 32px;
+  font-size: 13px;
+}
+
+.product-result-card .stat-grid {
+  gap: 5px;
+}
+
+.product-result-card .stat-grid div {
+  min-height: 38px;
+  padding: 6px;
+}
+
+.product-result-card .button-row.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.product-result-card .button-row a,
+.product-result-card .button-row button,
+.product-result-card .open-button,
+.product-result-card .mini-action {
+  min-height: 28px;
+  padding: 0 7px;
+  border-radius: 9px;
+  font-size: 10px;
+}
+
+@media (max-width: 1180px) {
+  .app-sidebar {
+    width: 232px;
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+  .result-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-panel {
+    top: 50px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-panel label,
+  .filter-panel select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-result-card .media-panel,
+  .product-result-card .media-panel .thumb {
+    min-height: 176px;
+  }
+}

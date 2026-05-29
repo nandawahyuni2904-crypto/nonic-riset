@@ -342,6 +342,7 @@ els.productSearch.addEventListener("click", async () => {
     });
     lastResearchData = data;
     renderResearch(data);
+    scrollToFirstResult();
     saveSearchHistory({ mode, keyword, category, count: (data.shorts || []).length });
     renderRecentSearchChips();
     await refreshQuotaStatus();
@@ -565,6 +566,7 @@ function renderProductResearch(data) {
   renderSource("tiktok", opportunities, "");
   renderSource("youtube", youtubeItems, errors.find((error) => error.startsWith("YouTube gagal")) || "");
   renderSource("shopee", shopeeItems, "");
+  scrollToFirstResult();
 }
 
 function renderOpportunityCard(item, index = 0) {
@@ -598,7 +600,9 @@ function renderOpportunityCard(item, index = 0) {
         ])}
         <p class="meta">Keyword: ${escapeHtml(item.keyword || item.matchedKeyword || "-")}</p>
         <div class="button-row quick-actions">
+          <a class="mini-action" href="https://shopee.co.id/search?keyword=${encodeURIComponent(item.keyword || item.matchedKeyword || productTitle)}" target="_blank" rel="noreferrer">Shopee</a>
           ${youtubeUrl ? renderOpenButton(youtubeUrl, "YouTube") : ""}
+          <button class="mini-action" type="button" data-copy-keyword="${escapeHtml(item.keyword || item.matchedKeyword || productTitle)}">Copy Keyword</button>
         </div>
       </div>
     </article>
@@ -1083,6 +1087,14 @@ function renderTrendIntelligence(stats = {}) {
 function updateHotSummary(opportunities = []) {
   const hot = opportunities.filter((item) => productStatusLabel({ ...(item.short || {}), ...item }) === "HOT").length;
   if (els.floatingHotProducts) els.floatingHotProducts.textContent = formatNumber(hot);
+}
+
+function scrollToFirstResult() {
+  requestAnimationFrame(() => {
+    const firstCard = els.tiktokRows?.querySelector(".product-result-card, .result-card");
+    if (!firstCard) return;
+    firstCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 async function loadEmergingProducts() {
