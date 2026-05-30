@@ -92,7 +92,7 @@ async function getCachedPerformance() {
     return { ...performanceCache.data, cached: true };
   }
 
-  const data = await getAmsProductPerformance({ page_no: 1, page_size: 100 });
+  const data = await getAmsProductPerformance({ page_no: 1, page_size: 10 });
   performanceCache = {
     createdAt: Date.now(),
     data

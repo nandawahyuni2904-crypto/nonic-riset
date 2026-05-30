@@ -8,7 +8,7 @@ const DEFAULT_PARAMS = {
   order_type: "ConfirmedOrder",
   channel: "AllChannel",
   page_no: 1,
-  page_size: 20
+  page_size: 10
 };
 
 function isShopeeAmsConfigured() {

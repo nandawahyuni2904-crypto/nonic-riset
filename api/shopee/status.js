@@ -5,6 +5,10 @@ const path = require("node:path");
 const AMS_PATH = "/api/v2/ams/get_open_campaign_added_product";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
 const TMP_TOKEN_PATH = path.join("/tmp", "shopee-token.json");
+const DEFAULT_AMS_PARAMS = {
+  page_no: 1,
+  page_size: 10
+};
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -37,7 +41,16 @@ module.exports = async function handler(req, res) {
     token_source: tokenInfo.source,
     api_reachable: false,
     recommendation_api_status: "not_checked",
-    error: null
+    error: null,
+    debug: {
+      endpoint: AMS_PATH,
+      method: "GET",
+      request_body: null,
+      request_params: DEFAULT_AMS_PARAMS,
+      response_status: null,
+      response_error: null,
+      response: null
+    }
   };
 
   const missing = [];
@@ -77,7 +90,8 @@ module.exports = async function handler(req, res) {
       partnerId,
       partnerKey,
       accessToken,
-      shopId
+      shopId,
+      params: DEFAULT_AMS_PARAMS
     });
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
@@ -94,6 +108,16 @@ module.exports = async function handler(req, res) {
     result.api_reachable = true;
     result.recommendation_api_status = classifyAmsResponse(response.status, data, shopeeError);
     result.error = shopeeError || (!response.ok ? `Shopee AMS HTTP ${response.status}` : null);
+    result.debug = {
+      endpoint: AMS_PATH,
+      method: "GET",
+      request_body: null,
+      request_params: debug.requestParams,
+      signed_query: debug.signedQuery,
+      response_status: response.status,
+      response_error: shopeeError,
+      response: data ?? text
+    };
 
     console.log("[shopee-status-debug]", {
       path: AMS_PATH,
@@ -101,6 +125,8 @@ module.exports = async function handler(req, res) {
       recommendation_api_status: result.recommendation_api_status,
       partner_id: numericPartnerId,
       shop_id: numericShopId,
+      requestParams: debug.requestParams,
+      responseError: shopeeError,
       baseStringLength: debug.baseStringLength,
       signLength: debug.signLength
     });
@@ -111,11 +137,12 @@ module.exports = async function handler(req, res) {
     result.error = error.name === "AbortError"
       ? "Shopee AMS request timeout."
       : error.message;
+    result.debug.response_error = result.error;
     return res.status(200).json(result);
   }
 };
 
-function buildSignedAmsUrl({ partnerId, partnerKey, accessToken, shopId }) {
+function buildSignedAmsUrl({ partnerId, partnerKey, accessToken, shopId, params = DEFAULT_AMS_PARAMS }) {
   const timestamp = Math.floor(Date.now() / 1000);
   const baseString = `${partnerId}${AMS_PATH}${timestamp}${accessToken}${shopId}`;
   const sign = crypto.createHmac("sha256", partnerKey).update(baseString).digest("hex");
@@ -125,13 +152,26 @@ function buildSignedAmsUrl({ partnerId, partnerKey, accessToken, shopId }) {
   url.searchParams.set("access_token", accessToken);
   url.searchParams.set("shop_id", String(Number(shopId)));
   url.searchParams.set("sign", sign);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+  });
   return {
     url: url.toString(),
     debug: {
+      requestParams: { ...params },
+      signedQuery: redactSignedQuery(url),
       baseStringLength: baseString.length,
       signLength: sign.length
     }
   };
+}
+
+function redactSignedQuery(url) {
+  const params = {};
+  for (const [key, value] of url.searchParams.entries()) {
+    params[key] = /access_token|sign/i.test(key) ? `REDACTED:${String(value).length}` : value;
+  }
+  return params;
 }
 
 function isTokenExpired(value) {

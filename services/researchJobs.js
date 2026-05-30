@@ -163,7 +163,7 @@ async function processResearchJob(job, fetchYouTubeTrends) {
   updateJob(jobId, { keywords: productKeywords });
 
   const shopeePromise = sourceTask("shopee", jobId, async () => {
-    const performance = await withTimeout(getProductPerformance({ page_size: Math.max(20, limit) }), Number(process.env.SHOPEE_JOB_TIMEOUT_MS || 15000), "Shopee AMS API belum tersedia");
+    const performance = await withTimeout(getProductPerformance({ page_size: Math.min(10, Math.max(1, limit)) }), Number(process.env.SHOPEE_JOB_TIMEOUT_MS || 15000), "Shopee AMS API belum tersedia");
     const matched = matchProductsToShorts(
       youtubeItems,
       scoreShopeeProducts(dedupeBy(performance.items || [], (item) => item.item_id || item.url || item.name), productKeywords.join(" ")).slice(0, 5)

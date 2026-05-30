@@ -3,6 +3,10 @@ const crypto = require("node:crypto");
 const AMS_TEST_PATH = "/api/v2/ams/get_open_campaign_added_product";
 const TEST_BASE_URL = "https://openplatform.sandbox.test-stable.shopee.sg";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
+const DEFAULT_AMS_PARAMS = {
+  page_no: 1,
+  page_size: 10
+};
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -50,6 +54,9 @@ module.exports = async function handler(req, res) {
   url.searchParams.set("access_token", accessToken);
   url.searchParams.set("shop_id", String(numericShopId));
   url.searchParams.set("sign", sign);
+  Object.entries(DEFAULT_AMS_PARAMS).forEach(([key, value]) => {
+    url.searchParams.set(key, String(value));
+  });
 
   try {
     const response = await fetch(url.toString(), {
@@ -66,6 +73,7 @@ module.exports = async function handler(req, res) {
         path: AMS_TEST_PATH,
         partner_id: numericPartnerId,
         shop_id: numericShopId,
+        params: DEFAULT_AMS_PARAMS,
         timestamp,
         baseStringLength: baseString.length,
         signLength: sign.length,
