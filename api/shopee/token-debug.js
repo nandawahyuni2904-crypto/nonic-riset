@@ -1,3 +1,8 @@
+const fs = require("node:fs");
+const path = require("node:path");
+
+const TMP_TOKEN_PATH = path.join("/tmp", "shopee-token.json");
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -6,49 +11,31 @@ module.exports = async function handler(req, res) {
 
   res.setHeader("Cache-Control", "no-store");
 
-  const cookies = parseCookies(req);
+  const tmpToken = readTmpToken();
   const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
-  const cookieAccessToken = String(cookies.SHOPEE_ACCESS_TOKEN || "").trim();
   const envRefreshToken = String(process.env.SHOPEE_REFRESH_TOKEN || "").trim();
-  const cookieRefreshToken = String(cookies.SHOPEE_REFRESH_TOKEN || "").trim();
   const envShopId = String(process.env.SHOPEE_SHOP_ID || "").trim();
-  const cookieShopId = String(cookies.SHOPEE_SHOP_ID || "").trim();
-  const callbackDebug = parseCallbackDebug(cookies.SHOPEE_CALLBACK_DEBUG);
-  const callbackSucceeded = Boolean(callbackDebug?.storage_write_success);
-  const accessToken = cookieAccessToken || (callbackSucceeded ? "" : envAccessToken);
-  const refreshToken = cookieRefreshToken || (callbackSucceeded ? "" : envRefreshToken);
+  const tmpAccessToken = String(tmpToken?.access_token || "").trim();
+  const tmpRefreshToken = String(tmpToken?.refresh_token || "").trim();
+  const tmpShopId = String(tmpToken?.shop_id || "").trim();
+  const tokenSource = tmpAccessToken ? "tmp" : envAccessToken ? "env" : "none";
+  const accessToken = tmpAccessToken || envAccessToken;
+  const refreshToken = tmpAccessToken ? tmpRefreshToken : envRefreshToken;
 
   return res.status(200).json({
     has_access_token: Boolean(accessToken),
     has_refresh_token: Boolean(refreshToken),
-    shop_id: cookieShopId || (callbackSucceeded ? "" : envShopId) || null,
+    shop_id: (tmpAccessToken ? tmpShopId : envShopId) || null,
     token_length: accessToken ? accessToken.length : 0,
-    token_source: cookieAccessToken ? "cookie" : callbackSucceeded ? "none" : envAccessToken ? "env" : "none",
-    callback_storage_seen: callbackSucceeded
+    token_source: tokenSource,
+    callback_storage_seen: Boolean(tmpAccessToken)
   });
 };
 
-function parseCookies(req) {
-  const header = String(req.headers?.cookie || "");
-  return header.split(";").reduce((acc, item) => {
-    const index = item.indexOf("=");
-    if (index === -1) return acc;
-    const key = item.slice(0, index).trim();
-    const value = item.slice(index + 1).trim();
-    if (!key) return acc;
-    try {
-      acc[key] = decodeURIComponent(value);
-    } catch {
-      acc[key] = value;
-    }
-    return acc;
-  }, {});
-}
-
-function parseCallbackDebug(value) {
-  if (!value) return null;
+function readTmpToken() {
   try {
-    return JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+    if (!fs.existsSync(TMP_TOKEN_PATH)) return null;
+    return JSON.parse(fs.readFileSync(TMP_TOKEN_PATH, "utf8"));
   } catch {
     return null;
   }

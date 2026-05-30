@@ -1,8 +1,11 @@
 const crypto = require("node:crypto");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const TOKEN_PATH = "/api/v2/auth/token/get";
 const TEST_BASE_URL = "https://openplatform.sandbox.test-stable.shopee.sg";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
+const TMP_TOKEN_PATH = path.join("/tmp", "shopee-token.json");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -67,17 +70,28 @@ module.exports = async function handler(req, res) {
     const data = parseJson(text);
     const token = data && typeof data === "object" ? data : null;
     if (response.ok && token?.access_token) {
+      const expireIn = Number(token.expire_in || token.expires_in || 0) || 0;
+      const expireAt = expireIn > 0 ? new Date(Date.now() + expireIn * 1000).toISOString() : null;
+      const tmpWrite = writeTmpToken({
+        access_token: token.access_token,
+        refresh_token: token.refresh_token || "",
+        shop_id: token.shop_id || numericShopId,
+        expire_at: expireAt
+      });
       const cookies = buildTokenCookies({
         accessToken: token.access_token,
         refreshToken: token.refresh_token || "",
         shopId: token.shop_id || numericShopId,
-        expireIn: token.expire_in || token.expires_in || 0
+        expireIn,
+        storageWriteSuccess: tmpWrite.ok
       });
       console.log("[shopee-callback-token-storage]", {
         received_access_token: Boolean(token.access_token),
         received_refresh_token: Boolean(token.refresh_token),
         received_shop_id: Boolean(token.shop_id || numericShopId),
-        storage_write_success: Boolean(cookies.length),
+        storage_write_success: tmpWrite.ok,
+        tmp_path: TMP_TOKEN_PATH,
+        tmp_error: tmpWrite.error || null,
         access_token_length: String(token.access_token || "").length,
         refresh_token_length: String(token.refresh_token || "").length,
         shop_id: token.shop_id || numericShopId
@@ -158,7 +172,7 @@ function buildTokenCookies(token) {
     received_access_token: Boolean(token.accessToken),
     received_refresh_token: Boolean(token.refreshToken),
     received_shop_id: Boolean(token.shopId),
-    storage_write_success: Boolean(token.accessToken && token.shopId),
+    storage_write_success: Boolean(token.storageWriteSuccess),
     access_token_length: String(token.accessToken || "").length,
     refresh_token_length: String(token.refreshToken || "").length
   };
@@ -169,6 +183,19 @@ function buildTokenCookies(token) {
     serializeCookie("SHOPEE_CALLBACK_DEBUG", Buffer.from(JSON.stringify(callbackDebug)).toString("base64url"), 60 * 15)
   ];
   return cookies;
+}
+
+function writeTmpToken(token) {
+  try {
+    fs.writeFileSync(TMP_TOKEN_PATH, JSON.stringify(token, null, 2), "utf8");
+    return { ok: true };
+  } catch (error) {
+    console.warn("[shopee-token-tmp-write-failed]", {
+      path: TMP_TOKEN_PATH,
+      error: error.message
+    });
+    return { ok: false, error: error.message };
+  }
 }
 
 function serializeCookie(name, value, maxAge) {

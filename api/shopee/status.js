@@ -1,7 +1,10 @@
 const crypto = require("node:crypto");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const AMS_PATH = "/api/v2/ams/get_open_campaign_added_product";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
+const TMP_TOKEN_PATH = path.join("/tmp", "shopee-token.json");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -51,7 +54,7 @@ module.exports = async function handler(req, res) {
 
   if (missing.length) {
     result.recommendation_api_status = "missing_env";
-    result.error = `ENV belum lengkap: ${missing.join(", ")}. Auth belum selesai jika access token belum disimpan sebagai ENV.`;
+    result.error = `Token belum tersedia di /tmp atau ENV belum lengkap: ${missing.join(", ")}. Login ulang lewat /api/shopee/auth.`;
     return res.status(200).json(result);
   }
 
@@ -146,42 +149,23 @@ function parseJson(value) {
 }
 
 function getTokenInfo(req) {
-  const cookies = parseCookies(req);
+  const tmpToken = readTmpToken();
   const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
-  const cookieAccessToken = String(cookies.SHOPEE_ACCESS_TOKEN || "").trim();
-  const callbackDebug = parseCallbackDebug(cookies.SHOPEE_CALLBACK_DEBUG);
-  const callbackSucceeded = Boolean(callbackDebug?.storage_write_success);
-  const source = cookieAccessToken ? "cookie" : callbackSucceeded ? "none" : envAccessToken ? "env" : "none";
+  const tmpAccessToken = String(tmpToken?.access_token || "").trim();
+  const source = tmpAccessToken ? "tmp" : envAccessToken ? "env" : "none";
   return {
-    accessToken: cookieAccessToken || (callbackSucceeded ? "" : envAccessToken),
-    refreshToken: String(cookies.SHOPEE_REFRESH_TOKEN || (callbackSucceeded ? "" : process.env.SHOPEE_REFRESH_TOKEN) || "").trim(),
-    shopId: String(cookies.SHOPEE_SHOP_ID || (callbackSucceeded ? "" : process.env.SHOPEE_SHOP_ID) || "").trim(),
-    expiresAt: String(callbackSucceeded ? "" : process.env.SHOPEE_TOKEN_EXPIRES_AT || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT || "").trim(),
+    accessToken: tmpAccessToken || envAccessToken,
+    refreshToken: String(tmpAccessToken ? tmpToken?.refresh_token : process.env.SHOPEE_REFRESH_TOKEN || "").trim(),
+    shopId: String(tmpAccessToken ? tmpToken?.shop_id : process.env.SHOPEE_SHOP_ID || "").trim(),
+    expiresAt: String(tmpAccessToken ? tmpToken?.expire_at : process.env.SHOPEE_TOKEN_EXPIRES_AT || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT || "").trim(),
     source
   };
 }
 
-function parseCookies(req) {
-  const header = String(req.headers?.cookie || "");
-  return header.split(";").reduce((acc, item) => {
-    const index = item.indexOf("=");
-    if (index === -1) return acc;
-    const key = item.slice(0, index).trim();
-    const value = item.slice(index + 1).trim();
-    if (!key) return acc;
-    try {
-      acc[key] = decodeURIComponent(value);
-    } catch {
-      acc[key] = value;
-    }
-    return acc;
-  }, {});
-}
-
-function parseCallbackDebug(value) {
-  if (!value) return null;
+function readTmpToken() {
   try {
-    return JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+    if (!fs.existsSync(TMP_TOKEN_PATH)) return null;
+    return JSON.parse(fs.readFileSync(TMP_TOKEN_PATH, "utf8"));
   } catch {
     return null;
   }
