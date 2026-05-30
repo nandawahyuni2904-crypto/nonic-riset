@@ -12,7 +12,11 @@ module.exports = async function handler(req, res) {
   req.query = req.query || parseQuery(req);
   const partnerId = String(process.env.SHOPEE_PARTNER_ID || "").trim();
   const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || "").trim();
-  const redirectUrl = String(process.env.SHOPEE_REDIRECT || "").trim();
+  const redirectUrl = String(
+    process.env.SHOPEE_REDIRECT
+    || process.env.SHOPEE_REDIRECT_URL
+    || "https://nonic-riset.vercel.app/api/shopee/callback"
+  ).trim();
 
   if (!partnerId || !partnerKey) {
     return res.status(400).json({
@@ -53,6 +57,7 @@ module.exports = async function handler(req, res) {
 
   const authUrl = `${baseUrl}${AUTH_PATH}?partner_id=${partnerId}&timestamp=${timestamp}&sign=${sign}&redirect=${encodeURIComponent(redirectUrl)}`;
 
+  res.setHeader("Set-Cookie", clearTokenCookies());
   return res.redirect(302, authUrl);
 };
 
@@ -67,4 +72,13 @@ function parseQuery(req) {
 function resolveBaseUrl(value) {
   const env = String(value || "").trim().toLowerCase();
   return /^(test|sandbox|testing|dev|development)$/.test(env) ? TEST_BASE_URL : PRODUCTION_BASE_URL;
+}
+
+function clearTokenCookies() {
+  return [
+    "shopee_access_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+    "shopee_refresh_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+    "shopee_shop_id=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+    "shopee_token_expires_at=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
+  ];
 }

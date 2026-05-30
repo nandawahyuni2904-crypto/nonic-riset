@@ -7,21 +7,22 @@ module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   const cookies = parseCookies(req);
+  const allowEnvToken = String(process.env.SHOPEE_ALLOW_ENV_TOKEN || "").trim().toLowerCase() === "true";
   const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
   const cookieAccessToken = String(cookies.shopee_access_token || "").trim();
   const envRefreshToken = String(process.env.SHOPEE_REFRESH_TOKEN || "").trim();
   const cookieRefreshToken = String(cookies.shopee_refresh_token || "").trim();
   const envShopId = String(process.env.SHOPEE_SHOP_ID || "").trim();
   const cookieShopId = String(cookies.shopee_shop_id || "").trim();
-  const accessToken = envAccessToken || cookieAccessToken;
-  const refreshToken = envRefreshToken || cookieRefreshToken;
+  const accessToken = cookieAccessToken || (allowEnvToken ? envAccessToken : "");
+  const refreshToken = cookieRefreshToken || (allowEnvToken ? envRefreshToken : "");
 
   return res.status(200).json({
     has_access_token: Boolean(accessToken),
     has_refresh_token: Boolean(refreshToken),
-    shop_id: envShopId || cookieShopId || null,
+    shop_id: cookieShopId || (allowEnvToken ? envShopId : "") || null,
     token_length: accessToken ? accessToken.length : 0,
-    token_source: envAccessToken ? "env" : cookieAccessToken ? "cookie" : "none"
+    token_source: cookieAccessToken ? "cookie" : allowEnvToken && envAccessToken ? "env" : "none"
   });
 };
 
