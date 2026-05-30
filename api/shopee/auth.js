@@ -78,6 +78,7 @@ function clearTokenCookies() {
   return [
     "SHOPEE_ACCESS_TOKEN=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
     "SHOPEE_REFRESH_TOKEN=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-    "SHOPEE_SHOP_ID=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
+    "SHOPEE_SHOP_ID=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+    "SHOPEE_CALLBACK_DEBUG=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
   ];
 }

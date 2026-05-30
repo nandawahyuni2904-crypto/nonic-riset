@@ -13,15 +13,18 @@ module.exports = async function handler(req, res) {
   const cookieRefreshToken = String(cookies.SHOPEE_REFRESH_TOKEN || "").trim();
   const envShopId = String(process.env.SHOPEE_SHOP_ID || "").trim();
   const cookieShopId = String(cookies.SHOPEE_SHOP_ID || "").trim();
-  const accessToken = cookieAccessToken || envAccessToken;
-  const refreshToken = cookieRefreshToken || envRefreshToken;
+  const callbackDebug = parseCallbackDebug(cookies.SHOPEE_CALLBACK_DEBUG);
+  const callbackSucceeded = Boolean(callbackDebug?.storage_write_success);
+  const accessToken = cookieAccessToken || (callbackSucceeded ? "" : envAccessToken);
+  const refreshToken = cookieRefreshToken || (callbackSucceeded ? "" : envRefreshToken);
 
   return res.status(200).json({
     has_access_token: Boolean(accessToken),
     has_refresh_token: Boolean(refreshToken),
-    shop_id: cookieShopId || envShopId || null,
+    shop_id: cookieShopId || (callbackSucceeded ? "" : envShopId) || null,
     token_length: accessToken ? accessToken.length : 0,
-    token_source: cookieAccessToken ? "cookie" : envAccessToken ? "env" : "none"
+    token_source: cookieAccessToken ? "cookie" : callbackSucceeded ? "none" : envAccessToken ? "env" : "none",
+    callback_storage_seen: callbackSucceeded
   });
 };
 
@@ -40,4 +43,13 @@ function parseCookies(req) {
     }
     return acc;
   }, {});
+}
+
+function parseCallbackDebug(value) {
+  if (!value) return null;
+  try {
+    return JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
 }

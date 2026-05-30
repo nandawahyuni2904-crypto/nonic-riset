@@ -67,14 +67,34 @@ module.exports = async function handler(req, res) {
     const data = parseJson(text);
     const token = data && typeof data === "object" ? data : null;
     if (response.ok && token?.access_token) {
-      setTokenCookies(res, {
+      const cookies = buildTokenCookies({
         accessToken: token.access_token,
         refreshToken: token.refresh_token || "",
         shopId: token.shop_id || numericShopId,
         expireIn: token.expire_in || token.expires_in || 0
       });
-      return res.redirect(302, "/");
+      console.log("[shopee-callback-token-storage]", {
+        received_access_token: Boolean(token.access_token),
+        received_refresh_token: Boolean(token.refresh_token),
+        received_shop_id: Boolean(token.shop_id || numericShopId),
+        storage_write_success: Boolean(cookies.length),
+        access_token_length: String(token.access_token || "").length,
+        refresh_token_length: String(token.refresh_token || "").length,
+        shop_id: token.shop_id || numericShopId
+      });
+      res.writeHead(302, {
+        Location: "/",
+        "Set-Cookie": cookies
+      });
+      return res.end();
     }
+    console.warn("[shopee-callback-token-storage-failed]", {
+      http_status: response.status,
+      received_access_token: Boolean(token?.access_token),
+      received_refresh_token: Boolean(token?.refresh_token),
+      received_shop_id: Boolean(token?.shop_id || numericShopId),
+      response_keys: token && typeof token === "object" ? Object.keys(token) : []
+    });
     return res.status(response.ok ? 200 : response.status).json({
       ok: response.ok,
       token_storage: response.ok && token?.access_token ? "secure_http_only_cookie" : "not_saved",
@@ -132,14 +152,23 @@ function resolveBaseUrl(value) {
   return /^(test|sandbox|testing|dev|development)$/.test(env) ? TEST_BASE_URL : PRODUCTION_BASE_URL;
 }
 
-function setTokenCookies(res, token) {
+function buildTokenCookies(token) {
   const maxAge = Math.max(60, Number(token.expireIn || 0) || 14400);
+  const callbackDebug = {
+    received_access_token: Boolean(token.accessToken),
+    received_refresh_token: Boolean(token.refreshToken),
+    received_shop_id: Boolean(token.shopId),
+    storage_write_success: Boolean(token.accessToken && token.shopId),
+    access_token_length: String(token.accessToken || "").length,
+    refresh_token_length: String(token.refreshToken || "").length
+  };
   const cookies = [
     serializeCookie("SHOPEE_ACCESS_TOKEN", token.accessToken, maxAge),
     serializeCookie("SHOPEE_REFRESH_TOKEN", token.refreshToken || "", 60 * 60 * 24 * 30),
-    serializeCookie("SHOPEE_SHOP_ID", String(token.shopId || ""), 60 * 60 * 24 * 30)
+    serializeCookie("SHOPEE_SHOP_ID", String(token.shopId || ""), 60 * 60 * 24 * 30),
+    serializeCookie("SHOPEE_CALLBACK_DEBUG", Buffer.from(JSON.stringify(callbackDebug)).toString("base64url"), 60 * 15)
   ];
-  res.setHeader("Set-Cookie", cookies);
+  return cookies;
 }
 
 function serializeCookie(name, value, maxAge) {

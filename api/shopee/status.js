@@ -149,12 +149,14 @@ function getTokenInfo(req) {
   const cookies = parseCookies(req);
   const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
   const cookieAccessToken = String(cookies.SHOPEE_ACCESS_TOKEN || "").trim();
-  const source = cookieAccessToken ? "cookie" : envAccessToken ? "env" : "none";
+  const callbackDebug = parseCallbackDebug(cookies.SHOPEE_CALLBACK_DEBUG);
+  const callbackSucceeded = Boolean(callbackDebug?.storage_write_success);
+  const source = cookieAccessToken ? "cookie" : callbackSucceeded ? "none" : envAccessToken ? "env" : "none";
   return {
-    accessToken: cookieAccessToken || envAccessToken,
-    refreshToken: String(cookies.SHOPEE_REFRESH_TOKEN || process.env.SHOPEE_REFRESH_TOKEN || "").trim(),
-    shopId: String(cookies.SHOPEE_SHOP_ID || process.env.SHOPEE_SHOP_ID || "").trim(),
-    expiresAt: String(process.env.SHOPEE_TOKEN_EXPIRES_AT || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT || "").trim(),
+    accessToken: cookieAccessToken || (callbackSucceeded ? "" : envAccessToken),
+    refreshToken: String(cookies.SHOPEE_REFRESH_TOKEN || (callbackSucceeded ? "" : process.env.SHOPEE_REFRESH_TOKEN) || "").trim(),
+    shopId: String(cookies.SHOPEE_SHOP_ID || (callbackSucceeded ? "" : process.env.SHOPEE_SHOP_ID) || "").trim(),
+    expiresAt: String(callbackSucceeded ? "" : process.env.SHOPEE_TOKEN_EXPIRES_AT || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT || "").trim(),
     source
   };
 }
@@ -174,6 +176,15 @@ function parseCookies(req) {
     }
     return acc;
   }, {});
+}
+
+function parseCallbackDebug(value) {
+  if (!value) return null;
+  try {
+    return JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
 }
 
 function extractShopeeError(data, text) {
