@@ -16,8 +16,9 @@ module.exports = async function handler(req, res) {
 
   const partnerId = String(process.env.SHOPEE_PARTNER_ID || "").trim();
   const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || "").trim();
-  const accessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
-  const shopId = String(process.env.SHOPEE_SHOP_ID || "").trim();
+  const tokenInfo = getTokenInfo(req);
+  const accessToken = tokenInfo.accessToken;
+  const shopId = tokenInfo.shopId;
   const envName = String(process.env.SHOPEE_ENV || "production").trim().toLowerCase() || "production";
   const baseUrl = resolveBaseUrl(envName);
 
@@ -73,6 +74,8 @@ module.exports = async function handler(req, res) {
         path: AMS_TEST_PATH,
         partner_id: numericPartnerId,
         shop_id: numericShopId,
+        active_shop_id: shopId || null,
+        active_token_source: tokenInfo.source,
         params: DEFAULT_AMS_PARAMS,
         timestamp,
         baseStringLength: baseString.length,
@@ -90,6 +93,8 @@ module.exports = async function handler(req, res) {
         path: AMS_TEST_PATH,
         partner_id: numericPartnerId,
         shop_id: numericShopId,
+        active_shop_id: shopId || null,
+        active_token_source: tokenInfo.source,
         timestamp,
         baseStringLength: baseString.length,
         signLength: sign.length,
@@ -111,4 +116,38 @@ function parseJson(value) {
 function resolveBaseUrl(value) {
   const env = String(value || "").trim().toLowerCase();
   return /^(test|sandbox|testing|dev|development)$/.test(env) ? TEST_BASE_URL : PRODUCTION_BASE_URL;
+}
+
+function getTokenInfo(req) {
+  const cookies = parseCookies(req);
+  const cookieAccessToken = String(cookies.SHOPEE_ACCESS_TOKEN || "").trim();
+  const cookieRefreshToken = String(cookies.SHOPEE_REFRESH_TOKEN || "").trim();
+  const cookieShopId = String(cookies.SHOPEE_SHOP_ID || "").trim();
+  const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
+  const envRefreshToken = String(process.env.SHOPEE_REFRESH_TOKEN || "").trim();
+  const envShopId = String(process.env.SHOPEE_SHOP_ID || "").trim();
+  const source = cookieAccessToken ? "cookie" : envAccessToken ? "env" : "none";
+  return {
+    accessToken: cookieAccessToken || envAccessToken,
+    refreshToken: cookieAccessToken ? cookieRefreshToken : envRefreshToken,
+    shopId: cookieAccessToken ? cookieShopId : envShopId,
+    source
+  };
+}
+
+function parseCookies(req) {
+  const header = String(req.headers?.cookie || "");
+  return header.split(";").reduce((acc, item) => {
+    const index = item.indexOf("=");
+    if (index === -1) return acc;
+    const key = item.slice(0, index).trim();
+    const value = item.slice(index + 1).trim();
+    if (!key) return acc;
+    try {
+      acc[key] = decodeURIComponent(value);
+    } catch {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
 }

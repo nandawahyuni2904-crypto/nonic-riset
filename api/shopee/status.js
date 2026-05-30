@@ -39,6 +39,9 @@ module.exports = async function handler(req, res) {
     token_expired: tokenExpired,
     auth_completed: authCompleted,
     token_source: tokenInfo.source,
+    active_shop_id: shopId || null,
+    active_token_source: tokenInfo.source,
+    active_token_expire: tokenExpiresAt || null,
     api_reachable: false,
     recommendation_api_status: "not_checked",
     error: null,
@@ -47,6 +50,7 @@ module.exports = async function handler(req, res) {
       method: "GET",
       request_body: null,
       request_params: DEFAULT_AMS_PARAMS,
+      token_candidates: tokenInfo.candidates,
       response_status: null,
       response_error: null,
       response: null
@@ -113,6 +117,7 @@ module.exports = async function handler(req, res) {
       method: "GET",
       request_body: null,
       request_params: debug.requestParams,
+      token_candidates: tokenInfo.candidates,
       signed_query: debug.signedQuery,
       response_status: response.status,
       response_error: shopeeError,
@@ -192,15 +197,49 @@ function getTokenInfo(req) {
   const tmpToken = readTmpToken();
   const cookies = parseCookies(req);
   const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
+  const envRefreshToken = String(process.env.SHOPEE_REFRESH_TOKEN || "").trim();
+  const envShopId = String(process.env.SHOPEE_SHOP_ID || "").trim();
+  const envExpiresAt = String(process.env.SHOPEE_TOKEN_EXPIRES_AT || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT || "").trim();
   const tmpAccessToken = String(tmpToken?.access_token || "").trim();
+  const tmpRefreshToken = String(tmpToken?.refresh_token || "").trim();
+  const tmpShopId = String(tmpToken?.shop_id || "").trim();
+  const tmpExpiresAt = String(tmpToken?.expire_at || "").trim();
   const cookieAccessToken = String(cookies.SHOPEE_ACCESS_TOKEN || "").trim();
+  const cookieRefreshToken = String(cookies.SHOPEE_REFRESH_TOKEN || "").trim();
+  const cookieShopId = String(cookies.SHOPEE_SHOP_ID || "").trim();
   const source = tmpAccessToken ? "tmp" : cookieAccessToken ? "cookie" : envAccessToken ? "env" : "none";
+  const selected = source === "tmp"
+    ? { accessToken: tmpAccessToken, refreshToken: tmpRefreshToken, shopId: tmpShopId, expiresAt: tmpExpiresAt }
+    : source === "cookie"
+      ? { accessToken: cookieAccessToken, refreshToken: cookieRefreshToken, shopId: cookieShopId, expiresAt: "" }
+      : source === "env"
+        ? { accessToken: envAccessToken, refreshToken: envRefreshToken, shopId: envShopId, expiresAt: envExpiresAt }
+        : { accessToken: "", refreshToken: "", shopId: "", expiresAt: "" };
   return {
-    accessToken: tmpAccessToken || cookieAccessToken || envAccessToken,
-    refreshToken: String(tmpAccessToken ? tmpToken?.refresh_token : cookieAccessToken ? cookies.SHOPEE_REFRESH_TOKEN : process.env.SHOPEE_REFRESH_TOKEN || "").trim(),
-    shopId: String(tmpAccessToken ? tmpToken?.shop_id : cookieAccessToken ? cookies.SHOPEE_SHOP_ID : process.env.SHOPEE_SHOP_ID || "").trim(),
-    expiresAt: String(tmpAccessToken ? tmpToken?.expire_at : process.env.SHOPEE_TOKEN_EXPIRES_AT || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT || "").trim(),
-    source
+    accessToken: selected.accessToken,
+    refreshToken: selected.refreshToken,
+    shopId: selected.shopId,
+    expiresAt: selected.expiresAt,
+    source,
+    candidates: {
+      tmp: {
+        has_access_token: Boolean(tmpAccessToken),
+        has_refresh_token: Boolean(tmpRefreshToken),
+        shop_id: tmpShopId || null,
+        expire_at: tmpExpiresAt || null
+      },
+      cookie: {
+        has_access_token: Boolean(cookieAccessToken),
+        has_refresh_token: Boolean(cookieRefreshToken),
+        shop_id: cookieShopId || null
+      },
+      env: {
+        has_access_token: Boolean(envAccessToken),
+        has_refresh_token: Boolean(envRefreshToken),
+        shop_id: envShopId || null,
+        expire_at: envExpiresAt || null
+      }
+    }
   };
 }
 
