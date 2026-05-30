@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const AMS_PATH = "/api/v2/ams/get_open_campaign_added_product";
+const REFRESH_PATH = "/api/v2/auth/access_token/get";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
 const TMP_TOKEN_PATH = path.join("/tmp", "shopee-token.json");
 const DEFAULT_AMS_PARAMS = {
@@ -21,7 +22,39 @@ module.exports = async function handler(req, res) {
   const environment = String(process.env.SHOPEE_ENV || "production").trim().toLowerCase() || "production";
   const partnerId = String(process.env.SHOPEE_PARTNER_ID || "").trim();
   const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || "").trim();
-  const tokenInfo = getTokenInfo(req);
+  let tokenInfo = getTokenInfo(req);
+  let refreshedCookie = null;
+  if (!tokenInfo.accessToken && tokenInfo.source === "cookie" && tokenInfo.refreshToken && tokenInfo.shopId && partnerId && partnerKey) {
+    const refreshResult = await refreshCookieAccessToken({
+      partnerId,
+      partnerKey,
+      refreshToken: tokenInfo.refreshToken,
+      shopId: tokenInfo.shopId,
+      environment
+    });
+    tokenInfo = {
+      ...tokenInfo,
+      accessToken: refreshResult.accessToken || "",
+      refreshToken: refreshResult.refreshToken || tokenInfo.refreshToken,
+      shopId: refreshResult.shopId || tokenInfo.shopId,
+      expiresAt: refreshResult.expiresAt || "",
+      source: "cookie",
+      refreshAttempted: true,
+      refreshSuccess: Boolean(refreshResult.accessToken),
+      refreshError: refreshResult.error || null,
+      candidates: {
+        ...tokenInfo.candidates,
+        cookie: {
+          ...(tokenInfo.candidates?.cookie || {}),
+          has_access_token: Boolean(refreshResult.accessToken),
+          has_refresh_token: Boolean(refreshResult.refreshToken || tokenInfo.refreshToken),
+          shop_id: refreshResult.shopId || tokenInfo.shopId || null
+        }
+      }
+    };
+    refreshedCookie = refreshResult.cookie || null;
+  }
+  if (refreshedCookie) res.setHeader("Set-Cookie", refreshedCookie);
   const accessToken = tokenInfo.accessToken;
   const shopId = tokenInfo.shopId;
   const tokenExpiresAt = tokenInfo.expiresAt;
@@ -42,6 +75,8 @@ module.exports = async function handler(req, res) {
     active_shop_id: shopId || null,
     active_token_source: tokenInfo.source,
     active_token_expire: tokenExpiresAt || null,
+    access_token_refresh_attempted: Boolean(tokenInfo.refreshAttempted),
+    access_token_refresh_success: Boolean(tokenInfo.refreshSuccess),
     api_reachable: false,
     recommendation_api_status: "not_checked",
     error: null,
@@ -51,6 +86,7 @@ module.exports = async function handler(req, res) {
       request_body: null,
       request_params: DEFAULT_AMS_PARAMS,
       token_candidates: tokenInfo.candidates,
+      refresh_error: tokenInfo.refreshError || null,
       response_status: null,
       response_error: null,
       response: null
@@ -118,6 +154,7 @@ module.exports = async function handler(req, res) {
       request_body: null,
       request_params: debug.requestParams,
       token_candidates: tokenInfo.candidates,
+      refresh_error: tokenInfo.refreshError || null,
       signed_query: debug.signedQuery,
       response_status: response.status,
       response_error: shopeeError,
@@ -193,6 +230,61 @@ function parseJson(value) {
   }
 }
 
+async function refreshCookieAccessToken({ partnerId, partnerKey, refreshToken, shopId, environment }) {
+  const numericPartnerId = Number(partnerId);
+  const numericShopId = Number(shopId);
+  if (!Number.isFinite(numericPartnerId) || !Number.isFinite(numericShopId)) {
+    return { error: "Cannot refresh Shopee token because partner_id/shop_id is not numeric." };
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const baseString = `${partnerId}${REFRESH_PATH}${timestamp}`;
+  const sign = crypto.createHmac("sha256", partnerKey).update(baseString).digest("hex");
+  const url = new URL(REFRESH_PATH, resolveBaseUrl(environment));
+  url.searchParams.set("partner_id", String(numericPartnerId));
+  url.searchParams.set("timestamp", String(timestamp));
+  url.searchParams.set("sign", sign);
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        refresh_token: refreshToken,
+        shop_id: numericShopId,
+        partner_id: numericPartnerId
+      })
+    });
+    const text = await response.text();
+    const data = parseJson(text);
+    if (!response.ok || !data?.access_token) {
+      return {
+        error: data?.message || data?.error || `Shopee refresh token failed (${response.status})`
+      };
+    }
+    const expireIn = Number(data.expire_in || data.expires_in || 0) || 14400;
+    const expiresAt = new Date(Date.now() + expireIn * 1000).toISOString();
+    const nextRefreshToken = data.refresh_token || refreshToken;
+    const nextShopId = String(data.shop_id || numericShopId);
+    return {
+      accessToken: String(data.access_token || ""),
+      refreshToken: String(nextRefreshToken || ""),
+      shopId: nextShopId,
+      expiresAt,
+      cookie: [
+        serializeCookie("SHOPEE_ACCESS_TOKEN", data.access_token, expireIn),
+        serializeCookie("SHOPEE_REFRESH_TOKEN", nextRefreshToken, 60 * 60 * 24 * 30),
+        serializeCookie("SHOPEE_SHOP_ID", nextShopId, 60 * 60 * 24 * 30)
+      ]
+    };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
 function getTokenInfo(req) {
   const tmpToken = readTmpToken();
   const cookies = parseCookies(req);
@@ -207,7 +299,8 @@ function getTokenInfo(req) {
   const cookieAccessToken = String(cookies.SHOPEE_ACCESS_TOKEN || "").trim();
   const cookieRefreshToken = String(cookies.SHOPEE_REFRESH_TOKEN || "").trim();
   const cookieShopId = String(cookies.SHOPEE_SHOP_ID || "").trim();
-  const source = tmpAccessToken ? "tmp" : cookieAccessToken ? "cookie" : envAccessToken ? "env" : "none";
+  const cookieSessionExists = Boolean(cookieAccessToken || cookieRefreshToken || cookieShopId);
+  const source = tmpAccessToken ? "tmp" : cookieSessionExists ? "cookie" : envAccessToken ? "env" : "none";
   const selected = source === "tmp"
     ? { accessToken: tmpAccessToken, refreshToken: tmpRefreshToken, shopId: tmpShopId, expiresAt: tmpExpiresAt }
     : source === "cookie"
@@ -241,6 +334,17 @@ function getTokenInfo(req) {
       }
     }
   };
+}
+
+function resolveBaseUrl(value) {
+  const env = String(value || "").trim().toLowerCase();
+  return /^(test|sandbox|testing|dev|development)$/.test(env)
+    ? "https://openplatform.sandbox.test-stable.shopee.sg"
+    : PRODUCTION_BASE_URL;
+}
+
+function serializeCookie(name, value, maxAge) {
+  return `${name}=${encodeURIComponent(value || "")}; Max-Age=${Math.max(60, Number(maxAge || 0) || 14400)}; Path=/; HttpOnly; Secure; SameSite=Lax`;
 }
 
 function readTmpToken() {
