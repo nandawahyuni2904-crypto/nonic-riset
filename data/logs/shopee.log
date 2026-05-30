@@ -261,3 +261,24 @@
 2026-05-28T19:23:51.217Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
 2026-05-28T19:23:51.896Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}
 2026-05-28T19:23:51.898Z status_refresh_skipped {"error":"Wrong sign.","code":""}
+2026-05-29T14:30:10.312Z token_refresh_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T14:30:10.317Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T14:30:10.967Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}
+2026-05-29T14:30:10.972Z status_refresh_skipped {"error":"Wrong sign.","code":""}
+2026-05-29T14:30:31.017Z token_refresh_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T14:30:31.035Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T14:30:31.183Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}
+2026-05-29T16:16:50.097Z token_refresh_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T16:16:50.103Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T16:16:50.646Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}
+2026-05-29T16:16:50.655Z status_refresh_skipped {"error":"Wrong sign.","code":""}
+2026-05-29T16:19:42.641Z token_refresh_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T16:19:42.647Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-29T16:19:42.770Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}
+2026-05-30T06:30:31.340Z token_refresh_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-30T06:30:31.346Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-30T06:30:31.581Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}
+2026-05-30T06:30:31.586Z status_refresh_skipped {"error":"Wrong sign.","code":""}
+2026-05-30T06:30:38.783Z token_refresh_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-30T06:30:38.785Z auth_post_request {"path":"/api/v2/auth/access_token/get","shopId":161893879,"environment":"sandbox"}
+2026-05-30T06:30:38.894Z auth_post_error {"path":"/api/v2/auth/access_token/get","status":403,"error":"Wrong sign.","response":"error_sign"}

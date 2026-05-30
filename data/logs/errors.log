@@ -1,0 +1,7 @@
+2026-05-29T14:18:52.384Z uncaughtException Error: UNKNOWN: unknown error, open 'C:\Users\ACER\Documents\Codex\2026-05-13\halo-2\data\cache.json'
+    at Object.writeFileSync (node:fs:2414:20)
+    at persist (C:\Users\ACER\Documents\Codex\2026-05-13\halo-2\services\cacheStore.js:87:6)
+    at persistCache (C:\Users\ACER\Documents\Codex\2026-05-13\halo-2\services\cacheStore.js:99:3)
+    at Timeout._onTimeout (C:\Users\ACER\Documents\Codex\2026-05-13\halo-2\server.js:433:5)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)

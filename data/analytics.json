@@ -5,7 +5,7 @@
     "gitar": 1,
     "dapur": 5,
     "fashion pria": 2,
-    "alat rumah tangga": 6,
+    "alat rumah tangga": 9,
     "fashion wanita": 3,
     "aksesoris hp": 1,
     "gadget viral": 1,
@@ -37,10 +37,11 @@
     "fashion wanita": 87,
     "terlaris": 82,
     "alat rumah": 85,
-    "sajadah travel aesthetic": 76
+    "sajadah travel aesthetic": 76,
+    "alat pembersih": 83
   },
   "niches": {
-    "home": 14,
+    "home": 17,
     "gadget": 7,
     "fashion": 5,
     "kesehatan": 1,
@@ -325,6 +326,36 @@
       "count": 20,
       "topMomentumKeyword": "sajadah travel aesthetic",
       "topMomentumScore": 76,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-29T14:30:50.585Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "alat pembersih",
+      "topMomentumScore": 83,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-29T16:20:04.484Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "alat rumah",
+      "topMomentumScore": 85,
+      "niche": "home"
+    },
+    {
+      "at": "2026-05-30T06:30:57.318Z",
+      "mode": "category",
+      "keyword": "",
+      "category": "Alat Rumah Tangga",
+      "count": 20,
+      "topMomentumKeyword": "alat rumah",
+      "topMomentumScore": 85,
       "niche": "home"
     }
   ]
