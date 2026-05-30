@@ -147,20 +147,14 @@ function parseJson(value) {
 
 function getTokenInfo(req) {
   const cookies = parseCookies(req);
-  const allowEnvToken = String(process.env.SHOPEE_ALLOW_ENV_TOKEN || "").trim().toLowerCase() === "true";
   const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
-  const cookieAccessToken = String(cookies.shopee_access_token || "").trim();
-  const source = cookieAccessToken ? "cookie" : allowEnvToken && envAccessToken ? "env" : "none";
+  const cookieAccessToken = String(cookies.SHOPEE_ACCESS_TOKEN || "").trim();
+  const source = cookieAccessToken ? "cookie" : envAccessToken ? "env" : "none";
   return {
-    accessToken: cookieAccessToken || (allowEnvToken ? envAccessToken : ""),
-    refreshToken: String(cookies.shopee_refresh_token || (allowEnvToken ? process.env.SHOPEE_REFRESH_TOKEN : "") || "").trim(),
-    shopId: String(cookies.shopee_shop_id || (allowEnvToken ? process.env.SHOPEE_SHOP_ID : "") || "").trim(),
-    expiresAt: String(
-      cookies.shopee_token_expires_at
-      || (allowEnvToken ? process.env.SHOPEE_TOKEN_EXPIRES_AT : "")
-      || (allowEnvToken ? process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT : "")
-      || ""
-    ).trim(),
+    accessToken: cookieAccessToken || envAccessToken,
+    refreshToken: String(cookies.SHOPEE_REFRESH_TOKEN || process.env.SHOPEE_REFRESH_TOKEN || "").trim(),
+    shopId: String(cookies.SHOPEE_SHOP_ID || process.env.SHOPEE_SHOP_ID || "").trim(),
+    expiresAt: String(process.env.SHOPEE_TOKEN_EXPIRES_AT || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT || "").trim(),
     source
   };
 }

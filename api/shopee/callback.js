@@ -73,6 +73,7 @@ module.exports = async function handler(req, res) {
         shopId: token.shop_id || numericShopId,
         expireIn: token.expire_in || token.expires_in || 0
       });
+      return res.redirect(302, "/");
     }
     return res.status(response.ok ? 200 : response.status).json({
       ok: response.ok,
@@ -133,12 +134,10 @@ function resolveBaseUrl(value) {
 
 function setTokenCookies(res, token) {
   const maxAge = Math.max(60, Number(token.expireIn || 0) || 14400);
-  const expiresAt = new Date(Date.now() + maxAge * 1000).toISOString();
   const cookies = [
-    serializeCookie("shopee_access_token", token.accessToken, maxAge),
-    serializeCookie("shopee_refresh_token", token.refreshToken || "", 60 * 60 * 24 * 30),
-    serializeCookie("shopee_shop_id", String(token.shopId || ""), 60 * 60 * 24 * 30),
-    serializeCookie("shopee_token_expires_at", expiresAt, maxAge)
+    serializeCookie("SHOPEE_ACCESS_TOKEN", token.accessToken, maxAge),
+    serializeCookie("SHOPEE_REFRESH_TOKEN", token.refreshToken || "", 60 * 60 * 24 * 30),
+    serializeCookie("SHOPEE_SHOP_ID", String(token.shopId || ""), 60 * 60 * 24 * 30)
   ];
   res.setHeader("Set-Cookie", cookies);
 }

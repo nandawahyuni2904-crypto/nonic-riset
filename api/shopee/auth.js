@@ -76,9 +76,8 @@ function resolveBaseUrl(value) {
 
 function clearTokenCookies() {
   return [
-    "shopee_access_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-    "shopee_refresh_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-    "shopee_shop_id=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-    "shopee_token_expires_at=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
+    "SHOPEE_ACCESS_TOKEN=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+    "SHOPEE_REFRESH_TOKEN=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+    "SHOPEE_SHOP_ID=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
   ];
 }
