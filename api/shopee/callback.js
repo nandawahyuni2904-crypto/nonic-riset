@@ -6,6 +6,7 @@ const TOKEN_PATH = "/api/v2/auth/token/get";
 const TEST_BASE_URL = "https://openplatform.sandbox.test-stable.shopee.sg";
 const PRODUCTION_BASE_URL = "https://partner.shopeemobile.com";
 const TMP_TOKEN_PATH = path.join("/tmp", "shopee-token.json");
+const LAST_RESULT_COOKIE = "SHOPEE_CALLBACK_LAST_RESULT";
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -58,6 +59,15 @@ module.exports = async function handler(req, res) {
     partner_id: numericPartnerId
   };
 
+  console.log("[shopee-callback-start]", {
+    callback_executed: true,
+    code_received: Boolean(code),
+    shop_id_received: Boolean(shopId),
+    token_path: TOKEN_PATH,
+    token_base_url: baseUrl,
+    tmp_save_location: TMP_TOKEN_PATH
+  });
+
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -69,21 +79,48 @@ module.exports = async function handler(req, res) {
     const text = await response.text();
     const data = parseJson(text);
     const token = data && typeof data === "object" ? data : null;
+    console.log("[shopee-callback-token-response]", {
+      http_status: response.status,
+      access_token_received: Boolean(token?.access_token),
+      refresh_token_received: Boolean(token?.refresh_token),
+      shop_id_received: Boolean(token?.shop_id || numericShopId),
+      response_keys: token && typeof token === "object" ? Object.keys(token) : []
+    });
     if (response.ok && token?.access_token) {
       const expireIn = Number(token.expire_in || token.expires_in || 0) || 0;
       const expireAt = expireIn > 0 ? new Date(Date.now() + expireIn * 1000).toISOString() : null;
-      const tmpWrite = writeTmpToken({
+      const savePayload = {
         access_token: token.access_token,
         refresh_token: token.refresh_token || "",
         shop_id: token.shop_id || numericShopId,
         expire_at: expireAt
+      };
+      console.log("[shopee-callback-save-attempt]", {
+        save_attempted: true,
+        save_location: TMP_TOKEN_PATH,
+        access_token_received: Boolean(savePayload.access_token),
+        refresh_token_received: Boolean(savePayload.refresh_token),
+        shop_id_received: Boolean(savePayload.shop_id)
+      });
+      const tmpWrite = writeTmpToken({
+        ...savePayload
+      });
+      const lastResult = buildLastResult({
+        accessTokenReceived: Boolean(token.access_token),
+        refreshTokenReceived: Boolean(token.refresh_token),
+        shopIdReceived: Boolean(token.shop_id || numericShopId),
+        saveAttempted: true,
+        saveSuccess: tmpWrite.ok,
+        saveLocation: TMP_TOKEN_PATH,
+        saveError: tmpWrite.error || null
       });
       const cookies = buildTokenCookies({
         accessToken: token.access_token,
         refreshToken: token.refresh_token || "",
         shopId: token.shop_id || numericShopId,
         expireIn,
-        storageWriteSuccess: tmpWrite.ok
+        storageWriteSuccess: tmpWrite.ok,
+        lastResult
       });
       console.log("[shopee-callback-token-storage]", {
         received_access_token: Boolean(token.access_token),
@@ -107,8 +144,21 @@ module.exports = async function handler(req, res) {
       received_access_token: Boolean(token?.access_token),
       received_refresh_token: Boolean(token?.refresh_token),
       received_shop_id: Boolean(token?.shop_id || numericShopId),
+      save_attempted: false,
+      save_location: TMP_TOKEN_PATH,
       response_keys: token && typeof token === "object" ? Object.keys(token) : []
     });
+    res.setHeader("Set-Cookie", buildLastResultCookie(buildLastResult({
+      accessTokenReceived: Boolean(token?.access_token),
+      refreshTokenReceived: Boolean(token?.refresh_token),
+      shopIdReceived: Boolean(token?.shop_id || numericShopId),
+      saveAttempted: false,
+      saveSuccess: false,
+      saveLocation: TMP_TOKEN_PATH,
+      saveError: response.ok
+        ? "Shopee token API response did not include access_token."
+        : `Shopee token API returned HTTP ${response.status}.`
+    })));
     return res.status(response.ok ? 200 : response.status).json({
       ok: response.ok,
       token_storage: response.ok && token?.access_token ? "secure_http_only_cookie" : "not_saved",
@@ -128,6 +178,20 @@ module.exports = async function handler(req, res) {
       shopee: sanitizeTokenResponse(data ?? text)
     });
   } catch (error) {
+    console.warn("[shopee-callback-exception]", {
+      save_attempted: false,
+      save_location: TMP_TOKEN_PATH,
+      error: error.message
+    });
+    res.setHeader("Set-Cookie", buildLastResultCookie(buildLastResult({
+      accessTokenReceived: false,
+      refreshTokenReceived: false,
+      shopIdReceived: Boolean(numericShopId),
+      saveAttempted: false,
+      saveSuccess: false,
+      saveLocation: TMP_TOKEN_PATH,
+      saveError: error.message
+    })));
     return res.status(502).json({
       ok: false,
       error: error.message,
@@ -180,7 +244,16 @@ function buildTokenCookies(token) {
     serializeCookie("SHOPEE_ACCESS_TOKEN", token.accessToken, maxAge),
     serializeCookie("SHOPEE_REFRESH_TOKEN", token.refreshToken || "", 60 * 60 * 24 * 30),
     serializeCookie("SHOPEE_SHOP_ID", String(token.shopId || ""), 60 * 60 * 24 * 30),
-    serializeCookie("SHOPEE_CALLBACK_DEBUG", Buffer.from(JSON.stringify(callbackDebug)).toString("base64url"), 60 * 15)
+    serializeCookie("SHOPEE_CALLBACK_DEBUG", Buffer.from(JSON.stringify(callbackDebug)).toString("base64url"), 60 * 15),
+    buildLastResultCookie(token.lastResult || buildLastResult({
+      accessTokenReceived: Boolean(token.accessToken),
+      refreshTokenReceived: Boolean(token.refreshToken),
+      shopIdReceived: Boolean(token.shopId),
+      saveAttempted: true,
+      saveSuccess: Boolean(token.storageWriteSuccess),
+      saveLocation: TMP_TOKEN_PATH,
+      saveError: null
+    }))
   ];
   return cookies;
 }
@@ -200,6 +273,31 @@ function writeTmpToken(token) {
 
 function serializeCookie(name, value, maxAge) {
   return `${name}=${encodeURIComponent(value || "")}; Max-Age=${maxAge}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+}
+
+function buildLastResultCookie(result) {
+  return serializeCookie(LAST_RESULT_COOKIE, Buffer.from(JSON.stringify(result)).toString("base64url"), 60 * 15);
+}
+
+function buildLastResult({
+  accessTokenReceived,
+  refreshTokenReceived,
+  shopIdReceived,
+  saveAttempted,
+  saveSuccess,
+  saveLocation,
+  saveError
+}) {
+  return {
+    callback_executed: true,
+    access_token_received: Boolean(accessTokenReceived),
+    refresh_token_received: Boolean(refreshTokenReceived),
+    shop_id_received: Boolean(shopIdReceived),
+    save_attempted: Boolean(saveAttempted),
+    save_success: Boolean(saveSuccess),
+    save_location: saveLocation || null,
+    save_error: saveError || null
+  };
 }
 
 function sanitizeTokenResponse(value) {
