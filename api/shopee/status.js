@@ -14,13 +14,10 @@ module.exports = async function handler(req, res) {
   const environment = String(process.env.SHOPEE_ENV || "production").trim().toLowerCase() || "production";
   const partnerId = String(process.env.SHOPEE_PARTNER_ID || "").trim();
   const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || "").trim();
-  const accessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
-  const shopId = String(process.env.SHOPEE_SHOP_ID || "").trim();
-  const tokenExpiresAt = String(
-    process.env.SHOPEE_TOKEN_EXPIRES_AT
-    || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT
-    || ""
-  ).trim();
+  const tokenInfo = getTokenInfo(req);
+  const accessToken = tokenInfo.accessToken;
+  const shopId = tokenInfo.shopId;
+  const tokenExpiresAt = tokenInfo.expiresAt;
 
   const liveMode = !/^(test|sandbox|testing|dev|development)$/.test(environment);
   const tokenExists = Boolean(accessToken);
@@ -34,6 +31,7 @@ module.exports = async function handler(req, res) {
     token_exists: tokenExists,
     token_expired: tokenExpired,
     auth_completed: authCompleted,
+    token_source: tokenInfo.source,
     api_reachable: false,
     recommendation_api_status: "not_checked",
     error: null
@@ -145,6 +143,42 @@ function parseJson(value) {
   } catch {
     return null;
   }
+}
+
+function getTokenInfo(req) {
+  const cookies = parseCookies(req);
+  const envAccessToken = String(process.env.SHOPEE_ACCESS_TOKEN || "").trim();
+  const cookieAccessToken = String(cookies.shopee_access_token || "").trim();
+  const source = envAccessToken ? "env" : cookieAccessToken ? "cookie" : "none";
+  return {
+    accessToken: envAccessToken || cookieAccessToken,
+    refreshToken: String(process.env.SHOPEE_REFRESH_TOKEN || cookies.shopee_refresh_token || "").trim(),
+    shopId: String(process.env.SHOPEE_SHOP_ID || cookies.shopee_shop_id || "").trim(),
+    expiresAt: String(
+      process.env.SHOPEE_TOKEN_EXPIRES_AT
+      || process.env.SHOPEE_ACCESS_TOKEN_EXPIRES_AT
+      || cookies.shopee_token_expires_at
+      || ""
+    ).trim(),
+    source
+  };
+}
+
+function parseCookies(req) {
+  const header = String(req.headers?.cookie || "");
+  return header.split(";").reduce((acc, item) => {
+    const index = item.indexOf("=");
+    if (index === -1) return acc;
+    const key = item.slice(0, index).trim();
+    const value = item.slice(index + 1).trim();
+    if (!key) return acc;
+    try {
+      acc[key] = decodeURIComponent(value);
+    } catch {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
 }
 
 function extractShopeeError(data, text) {
