@@ -6029,9 +6029,6 @@ body.modal-open {
 .emerging-section,
 .insights,
 .importer,
-.results-tabs,
-.data-section[data-section="youtube"],
-.data-section[data-section="affiliate"],
 .action-panel,
 .intel-panel,
 #keywordInsightPanel,
@@ -6587,6 +6584,11 @@ body {
 .filter-panel {
   align-items: center;
   gap: 6px;
+  isolation: isolate;
+}
+
+.filter-panel + .filter-panel {
+  display: none !important;
 }
 
 .filter-panel label {
@@ -6620,6 +6622,19 @@ body {
 
 .filter-panel label input[type="checkbox"]:checked::after {
   left: 16px !important;
+}
+
+.results-tabs {
+  display: grid !important;
+  visibility: visible !important;
+}
+
+.data-section[data-section] {
+  display: none !important;
+}
+
+.data-section[data-section].is-active:not([hidden]) {
+  display: block !important;
 }
 
 .side-nav a:first-child:not(.is-active) {

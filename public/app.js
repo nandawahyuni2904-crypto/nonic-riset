@@ -94,6 +94,11 @@ const sectionState = {
   shopee: { visible: 3, items: [], error: "" }
 };
 const HISTORY_KEY = "viralResearchHistory";
+const RESULT_TAB_LABELS = {
+  opportunities: "Peluang Terbaik",
+  youtube: "Video YT",
+  affiliate: "Shopee Trends"
+};
 
 const FALLBACK_CATEGORIES = [
   "Alat Rumah Tangga",
@@ -178,6 +183,7 @@ function initResultTabs() {
   document.querySelectorAll("[data-result-tab]").forEach((button) => {
     button.addEventListener("click", () => setActiveResultsTab(button.dataset.resultTab));
   });
+  updateResultTabCounts();
   setActiveResultsTab("opportunities");
 }
 
@@ -265,12 +271,12 @@ function setDashboardPage(page) {
   show(".landing-panel", page === "dashboard");
   show("#trending-now", showMainWorkflow);
   show("#analytics", page === "dashboard" || page === "analytics" || page === "discovery");
-  show("#researchStatus, .filter-panel, .results-tabs", showMainWorkflow);
+  show("#researchStatus, .filter-panel, .results-tabs", true);
   show("#emerging-products", page === "products" || page === "dashboard");
   show("#keywordInsightPanel", page === "keyword");
   show("#keyword-insights", page === "keyword" || page === "analytics");
   show("#viral-discovery", page === "analytics" || page === "discovery");
-  show(".data-section[data-section]", showMainWorkflow);
+  show(".data-section[data-section]", true);
   if (page === "products" || page === "discovery" || page === "dashboard") setActiveResultsTab("opportunities");
   if (page === "keyword") renderKeywordRecommendations(lastResearchData?.keywordRecommendations || []);
   const target = page === "products"
@@ -422,6 +428,7 @@ function renderResearch(data) {
   renderSource("youtube", applyVideoFilters(shorts), "");
   renderSource("shopee", products, "");
   renderSource("tiktok", opportunities, "");
+  updateResultTabCounts(opportunities.length, shorts.length, products.length);
   renderKeywordRecommendations(recommendations);
   renderChipList(els.derivedKeywords, els.derivedKeywordCount, derived, "keyword");
   renderChipList(els.productAngles, els.angleCount, angles, "angle");
@@ -565,10 +572,17 @@ function renderSourcePage(source) {
     renderGrid(els.youtubeRows, items.length ? visibleItems.map((item) => renderYouTubeCard(item)).join("") + controls : emptyMessage(error || "Tidak ada YT Viral.", "Coba keyword dengan intent jualan: review, racun, shopee, aesthetic, atau portable."));
   }
   if (source === "shopee") {
-    els.shopeeCount.textContent = `${items.length} produk`;
-    const summary = currentShopeeStats ? renderShopeeAmsSummary(currentShopeeStats, items.length) : "";
-    renderGrid(els.shopeeRows, items.length ? summary + visibleItems.map((item) => renderShopeeCard(item)).join("") + controls : summary + shopeePendingMessage(error));
+    els.shopeeCount.textContent = shopeeSectionCountText(items);
+    renderGrid(els.shopeeRows, items.length ? visibleItems.map((item) => renderShopeeCard(item)).join("") + controls : shopeePendingMessage(error));
   }
+}
+
+function shopeeSectionCountText(items = []) {
+  const countText = `${items.length} trends`;
+  const stats = currentShopeeStats || buildShopeeStats(items);
+  const average = Number(stats?.averageCommissionRate || 0);
+  const suffix = average ? ` | avg komisi ${formatPercent(average)}` : "";
+  return countText + suffix;
 }
 
 function shopeePendingMessage(error) {
@@ -632,8 +646,9 @@ els.parse.addEventListener("click", () => {
 
 function renderProductResearch(data) {
   const youtubeItems = Array.isArray(data.youtube) ? data.youtube : data.youtube?.items || [];
-  const shopeeItems = Array.isArray(data.shopee) ? data.shopee : data.shopee?.items || [];
+  const shopeeItems = extractShopeeItems(data);
   const opportunities = data.opportunities || [];
+  currentShopeeStats = data.shopeeStats || data.stats?.shopee || buildShopeeStats(shopeeItems);
   const errors = formatSourceErrors([
     ...(Array.isArray(data.errors) ? data.errors : []),
     data.errors?.youtube && `YouTube gagal: ${data.errors.youtube}`,
@@ -652,6 +667,7 @@ function renderProductResearch(data) {
   els.youtubeCount.textContent = `${youtubeItems.length} video`;
   els.shopeeCount.textContent = `${shopeeItems.length} produk`;
   setTotals(opportunities.length, youtubeItems.length, shopeeItems.length);
+  updateResultTabCounts(opportunities.length, youtubeItems.length, shopeeItems.length);
   resetSectionPaging();
   renderSource("tiktok", opportunities, "");
   renderSource("youtube", youtubeItems, errors.find((error) => error.startsWith("YouTube gagal")) || "");
@@ -990,6 +1006,20 @@ function setTotals(tiktok, youtube, shopee) {
   els.youtubeTotal.textContent = formatNumber(youtube);
   if (els.shopeeTotal) els.shopeeTotal.textContent = formatNumber(shopee);
   if (els.floatingOpportunities) els.floatingOpportunities.textContent = formatNumber(tiktok);
+  updateResultTabCounts(tiktok, youtube, shopee);
+}
+
+function updateResultTabCounts(opportunities = 0, youtube = 0, shopee = 0) {
+  const counts = {
+    opportunities,
+    youtube,
+    affiliate: shopee
+  };
+  document.querySelectorAll("[data-result-tab]").forEach((button) => {
+    const key = button.dataset.resultTab;
+    const label = RESULT_TAB_LABELS[key] || button.textContent.replace(/\s*\([^)]*\)\s*$/, "");
+    button.textContent = `${label} (${formatNumber(counts[key] || 0)})`;
+  });
 }
 
 function formatDate(value) {
