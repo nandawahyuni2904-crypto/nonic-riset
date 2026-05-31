@@ -461,11 +461,14 @@ function normalizeShopeeDisplayItem(item = {}) {
   const name = item.item_name || item.name || item.product_name || item.title || "Produk Shopee";
   const image = item.image_url || item.image || item.item_image || item.product_image || "";
   const commissionRate = item.commission_rate ?? item.commissionRate ?? item.commission_ratio ?? item.rate ?? 0;
+  const directUrl = item.product_url || item.productUrl || item.product_link || item.item_url || "";
+  const fallbackSearchUrl = item.fallback_search_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(name)}`;
   return {
     ...item,
     source: item.source || "shopee-ams-production",
     validationStatus: item.validationStatus || "shopee-ams-production",
     item_id: item.item_id || item.itemid || item.product_id || "",
+    shop_id: item.shop_id || item.shopid || "",
     item_name: name,
     name,
     image_url: image,
@@ -476,7 +479,10 @@ function normalizeShopeeDisplayItem(item = {}) {
     price: item.price || item.item_price || "",
     shop_name: item.shop_name || item.shopName || item.shop || "",
     shopName: item.shopName || item.shop_name || item.shop || "",
-    url: item.url || item.product_link || item.item_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(name)}`
+    product_url: directUrl,
+    item_url: item.item_url || directUrl,
+    fallback_search_url: fallbackSearchUrl,
+    url: directUrl || item.url || fallbackSearchUrl
   };
 }
 
@@ -730,6 +736,9 @@ function renderShopeeCard(item) {
   const amsProduct = item.validationStatus === "shopee-ams-production" || item.source === "shopee-ams-production";
   const productName = item.item_name || item.name || "Produk Shopee";
   const commissionRate = Number(item.commission_rate ?? item.commissionRate ?? 0);
+  const directProductUrl = item.product_url || item.item_url || "";
+  const fallbackSearchUrl = item.fallback_search_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(productName)}`;
+  const shopeeUrl = amsProduct ? directProductUrl || fallbackSearchUrl : item.url;
   return `
     <article class="result-card">
       ${renderImage(item.image_url || item.image, productName, "Shopee", item)}
@@ -738,14 +747,15 @@ function renderShopeeCard(item) {
         <h3>${escapeHtml(productName)}</h3>
         <p class="price">${escapeHtml(amsProduct ? item.price || "Harga AMS belum tersedia" : manual ? "Validasi manual Shopee" : item.price || (item.sales ? `Sales ${formatCurrency(item.sales)}` : "Sales belum tersedia"))}</p>
         <p class="meta">${escapeHtml(amsProduct ? `AMS Production - Komisi ${formatPercent(commissionRate)} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? item.reason || "Produk real dari hasil pencarian Shopee." : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
+        ${amsProduct && !directProductUrl ? `<p class="meta link-fallback-note">Link produk belum tersedia, memakai pencarian Shopee</p>` : ""}
         ${renderStats(amsProduct ? [
           ["Item ID", item.item_id || "-"],
+          ["Product URL", directProductUrl ? "tersedia" : "-"],
+          ["Fallback URL", fallbackSearchUrl ? "tersedia" : "-"],
           ["Status", item.campaign_status || item.campaignStatus || "-"],
-          ["Sales", item.sales || 0],
           ["Harga", item.price || "-"],
           ["Komisi", formatPercent(commissionRate)],
           ["Toko", item.shop_name || item.shopName || "-"],
-          ["Terjual", item.items_sold || item.soldCount || 0],
           ["Peluang", formatChance(item.chance ?? item.score)]
         ] : realSearchProduct ? [
           ["Total Penjualan", item.soldCount || item.items_sold || 0],
@@ -761,7 +771,10 @@ function renderShopeeCard(item) {
           ["Buyer Baru", item.new_buyers],
           ["Peluang", formatChance(item.chance ?? item.score)]
         ])}
-        <div class="button-row quick-actions">${renderOpenButton(item.url, "Cari di Shopee")}${renderQuickActions(item)}</div>
+        <div class="button-row quick-actions">
+          ${renderOpenButton(shopeeUrl, amsProduct ? "Lihat Produk" : "Cari di Shopee")}
+          <button class="mini-action" type="button" data-copy-keyword="${escapeHtml(productName)}">Copy Keyword</button>
+        </div>
       </div>
     </article>
   `;

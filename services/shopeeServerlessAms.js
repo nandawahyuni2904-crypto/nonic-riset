@@ -225,6 +225,7 @@ function extractItems(data) {
 
 function normalizeAmsProduct(item, index) {
   const itemId = item.item_id || item.itemid || item.product_id || item.productid;
+  const shopId = item.shop_id || item.shopid || item.seller_id || item.sellerid;
   const name = cleanText(item.item_name || item.name || item.product_name || item.title);
   if (!itemId && !name) return null;
   const commissionRate = toNumber(item.commission_rate || item.commission_ratio || item.rate || item.commission);
@@ -236,11 +237,14 @@ function normalizeAmsProduct(item, index) {
   const roi = toNumber(item.roi);
   const score = scoreAmsProduct({ commissionRate, sales, itemsSold, orders, clicks, roi, index });
   const imageUrl = item.image_url || item.image || item.item_image || item.product_image || "";
-  const url = item.product_link || item.item_url || item.url || buildShopeeProductUrl(itemId, name);
+  const productUrl = item.product_url || item.product_link || item.item_url || item.url || buildShopeeProductUrl(itemId, shopId, name);
+  const fallbackSearchUrl = buildShopeeSearchUrl(name || itemId);
+  const url = productUrl || fallbackSearchUrl;
   const campaignStatus = item.campaign_status || item.status || item.product_status || item.campaignStatus || "";
   return {
     source: "shopee-ams-production",
     item_id: itemId,
+    shop_id: shopId || "",
     item_name: name,
     name,
     commission_rate: commissionRate,
@@ -260,6 +264,9 @@ function normalizeAmsProduct(item, index) {
     clicks,
     roi,
     est_commission: toNumber(item.est_commission || item.estimated_commission),
+    product_url: productUrl,
+    item_url: item.item_url || productUrl,
+    fallback_search_url: fallbackSearchUrl,
     url,
     score,
     chance: score,
@@ -284,6 +291,9 @@ function buildAmsStats(items) {
       image_url: topCommissionProduct.image_url,
       price: topCommissionProduct.price,
       shop_name: topCommissionProduct.shop_name,
+      product_url: topCommissionProduct.product_url || topCommissionProduct.item_url || "",
+      item_url: topCommissionProduct.item_url || topCommissionProduct.product_url || "",
+      fallback_search_url: topCommissionProduct.fallback_search_url || buildShopeeSearchUrl(topCommissionProduct.item_name),
       url: topCommissionProduct.url
     } : null
   };
@@ -308,9 +318,22 @@ function normalizePrice(value) {
   return `Rp${new Intl.NumberFormat("id-ID").format(normalized)}`;
 }
 
-function buildShopeeProductUrl(itemId, name) {
-  if (!itemId) return `https://shopee.co.id/search?keyword=${encodeURIComponent(name || "")}`;
-  return `https://shopee.co.id/search?keyword=${encodeURIComponent(name || itemId)}`;
+function buildShopeeProductUrl(itemId, shopId, name) {
+  if (!itemId || !shopId) return "";
+  const slug = slugifyShopeeName(name || "produk-shopee");
+  return `https://shopee.co.id/${slug}-i.${shopId}.${itemId}`;
+}
+
+function buildShopeeSearchUrl(keyword) {
+  return `https://shopee.co.id/search?keyword=${encodeURIComponent(keyword || "")}`;
+}
+
+function slugifyShopeeName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120) || "produk-shopee";
 }
 
 function parseCookies(req) {
