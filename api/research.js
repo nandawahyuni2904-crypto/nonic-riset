@@ -1,6 +1,7 @@
 const { getCategoryKeywords } = require("../services/categories");
 const { buildOpportunities, fetchYouTubeShortsIndonesia } = require("../services/shortsResearch");
 const { labelScore } = require("../services/scoring");
+const { getAmsProductsFromRequest } = require("../services/shopeeServerlessAms");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -26,8 +27,11 @@ module.exports = async function handler(req, res) {
       maxKeywords: mode === "category" ? 2 : 1
     });
     const shorts = shortsResult.items || [];
-    const products = [];
+    const amsResult = await getAmsProductsFromRequest(req, { page_no: 1, page_size: 10 });
+    if (amsResult.setCookies) res.setHeader("Set-Cookie", amsResult.setCookies);
+    const products = filterProductsByKeyword(amsResult.items || [], resolvedKeyword);
     const opportunities = buildOpportunities(shorts, products);
+    const shopeeStats = amsResult.stats || buildShopeeStats(products);
 
     return res.status(200).json({
       ok: true,
@@ -36,16 +40,37 @@ module.exports = async function handler(req, res) {
       category: mode === "category" ? category : "",
       shorts,
       products,
+      shopee: products,
       opportunities,
       keywordRecommendations: shortsResult.keywordRecommendations || [],
       topKeywordTurunan: shortsResult.topKeywordTurunan || [],
       topProductAngles: shortsResult.topProductAngles || [],
-      stats: shortsResult.stats || {},
+      stats: {
+        ...(shortsResult.stats || {}),
+        shopee: shopeeStats
+      },
+      shopeeStats,
+      shopeeStatus: {
+        ready: Boolean(amsResult.ok),
+        message: amsResult.message || amsResult.error || "",
+        tokenSource: amsResult.tokenSource || "",
+        shopId: amsResult.shopId || null,
+        rawItemCount: amsResult.rawItemCount || 0,
+        mappedItemCount: amsResult.mappedItemCount || products.length
+      },
       debug: {
         youtube: [shortsResult.debug || {}],
+        shopee: {
+          ok: Boolean(amsResult.ok),
+          tokenSource: amsResult.tokenSource || "",
+          shopId: amsResult.shopId || null,
+          rawItemCount: amsResult.rawItemCount || 0,
+          mappedItemCount: amsResult.mappedItemCount || 0,
+          error: amsResult.error || null
+        },
         serverless: true
       },
-      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee, ${opportunities.length} peluang.${products.length ? "" : " Menunggu approval AMS Shopee."}`
+      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee AMS, ${opportunities.length} peluang.${amsResult.ok ? " Shopee Ready." : ` ${amsResult.error || "Shopee belum mengambil data trends."}`}`
     });
   } catch (error) {
     console.error("[api/research] failed", {
@@ -232,6 +257,37 @@ function normalizeMode(mode) {
 
 function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function filterProductsByKeyword(products, keyword) {
+  const terms = cleanText(keyword).toLowerCase().split(/\s+/).filter((term) => term.length > 2);
+  if (!terms.length) return products;
+  const matched = products.filter((product) => {
+    const text = `${product.item_name || ""} ${product.name || ""}`.toLowerCase();
+    return terms.some((term) => text.includes(term));
+  });
+  return matched.length ? matched : products;
+}
+
+function buildShopeeStats(products) {
+  const count = products.length;
+  const avgCommission = count
+    ? Math.round((products.reduce((sum, item) => sum + Number(item.commission_rate || 0), 0) / count) * 100) / 100
+    : 0;
+  const top = [...products].sort((a, b) => Number(b.commission_rate || 0) - Number(a.commission_rate || 0))[0] || null;
+  return {
+    productCount: count,
+    averageCommissionRate: avgCommission,
+    topCommissionProduct: top ? {
+      item_id: top.item_id,
+      item_name: top.item_name || top.name,
+      commission_rate: top.commission_rate || 0,
+      image_url: top.image_url || top.image || "",
+      price: top.price || "",
+      shop_name: top.shop_name || top.shopName || "",
+      url: top.url || ""
+    } : null
+  };
 }
 
 function redactApiKey(url) {

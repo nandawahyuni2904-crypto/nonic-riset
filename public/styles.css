@@ -6540,6 +6540,17 @@ body {
   font-size: 10px;
 }
 
+.shopee-summary-card {
+  border-color: rgba(255, 138, 61, 0.42);
+  background:
+    linear-gradient(135deg, rgba(255, 138, 61, 0.16), rgba(20, 184, 166, 0.08)),
+    rgba(15, 23, 42, 0.72);
+}
+
+.shopee-summary-card h3 {
+  color: #fff7ed;
+}
+
 @media (max-width: 900px) {
   .result-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

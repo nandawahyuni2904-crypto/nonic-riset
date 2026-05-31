@@ -85,6 +85,7 @@ const els = {
 };
 let lastResearchData = null;
 let currentShorts = [];
+let currentShopeeStats = null;
 let loadingTimer = null;
 const THEME_KEY = "trendScopeTheme";
 const sectionState = {
@@ -149,15 +150,20 @@ async function init() {
 
 function updateConnectionBadges(status, shopeeStatus, usage) {
   const youtubeReady = Boolean(status.youtubeConfigured);
-  const shopeeConnected = Boolean(shopeeStatus?.authorized && shopeeStatus?.tokenStatus === "active");
-  const shopeeWaiting = Boolean(shopeeStatus?.configured && !shopeeConnected);
+  const shopeeConnected = Boolean(
+    shopeeStatus?.auth_completed
+    || shopeeStatus?.authorized
+    || shopeeStatus?.api_reachable
+    || shopeeStatus?.recommendation_api_status === "ok_with_items"
+    || shopeeStatus?.recommendation_api_status === "ok_empty"
+  );
   const quotaText = usage?.devUnlimited ? "Unlimited dev search" : `${usage?.remaining ?? status.dailySearchLimit}/${status.dailySearchLimit} search left`;
   setBadge(els.youtubeBadge, youtubeReady ? "YouTube Ready" : "YouTube Needs Key", youtubeReady ? "success" : "warning");
-  setBadge(els.shopeeBadge, shopeeConnected ? "Shopee Connected" : shopeeWaiting ? "Waiting AMS" : "Shopee Setup", shopeeConnected ? "success" : "warning");
+  setBadge(els.shopeeBadge, shopeeConnected ? "Shopee Ready" : "Shopee Setup", shopeeConnected ? "success" : "warning");
   if (els.youtubeKpiStatus) els.youtubeKpiStatus.textContent = youtubeReady ? "Ready" : "Setup";
-  if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = shopeeConnected ? "Connected" : "Waiting AMS";
-  if (els.amsStatusTop) els.amsStatusTop.textContent = shopeeConnected ? "Connected" : shopeeWaiting ? "Waiting" : "Setup";
-  if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = shopeeConnected ? "Connected" : shopeeWaiting ? "Waiting AMS" : "Setup";
+  if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = shopeeConnected ? "Ready" : "Setup";
+  if (els.amsStatusTop) els.amsStatusTop.textContent = shopeeConnected ? "Shopee Ready" : "Setup";
+  if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = shopeeConnected ? "Shopee Ready" : "Setup";
   els.status.textContent = quotaText;
 }
 
@@ -367,6 +373,7 @@ function renderResearch(data) {
   const derived = data.topKeywordTurunan || recommendations;
   const angles = data.topProductAngles || buildClientAngles(shorts);
   const stats = data.stats || data.debug?.youtube?.find((item) => item?.stats)?.stats || buildClientStats(shorts, recommendations);
+  currentShopeeStats = data.shopeeStats || data.stats?.shopee || buildShopeeStats(products);
   currentShorts = shorts;
   resetSectionPaging();
 
@@ -381,22 +388,22 @@ function renderResearch(data) {
   setTotals(opportunities.length, shorts.length, products.length);
   updateHotSummary(opportunities);
   updateShopeeTrendBadge(products.length);
-  const shopeeNote = products.length ? "" : " Menunggu approval AMS Shopee.";
-  setResearchStatus(formatResearchMessage(data.message || `Selesai. ${opportunities.length} peluang, ${shorts.length} video viral, ${products.length} trends Shopee.${shopeeNote}`), shorts.length || opportunities.length ? "success" : "warning");
+  const shopeeNote = products.length ? " Shopee Ready." : " Shopee Ready, belum ada produk AMS yang cocok.";
+  setResearchStatus(formatResearchMessage(data.message || `Selesai. ${opportunities.length} peluang, ${shorts.length} video viral, ${products.length} trends Shopee.${shopeeNote}`), shorts.length || opportunities.length || products.length ? "success" : "warning");
 }
 
 function updateShopeeTrendBadge(count) {
   if (count > 0) {
-    setBadge(els.shopeeBadge, "Shopee Trends Ready", "success");
-    if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Active";
-    if (els.amsStatusTop) els.amsStatusTop.textContent = "Active";
-    if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = "Active";
+    setBadge(els.shopeeBadge, "Shopee Ready", "success");
+    if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Ready";
+    if (els.amsStatusTop) els.amsStatusTop.textContent = "Shopee Ready";
+    if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = "Shopee Ready";
     return;
   }
-  setBadge(els.shopeeBadge, "Menunggu AMS", "warning");
-  if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Menunggu AMS";
-  if (els.amsStatusTop) els.amsStatusTop.textContent = "Waiting";
-  if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = "Waiting AMS";
+  setBadge(els.shopeeBadge, "Shopee Ready", "success");
+  if (els.shopeeKpiStatus) els.shopeeKpiStatus.textContent = "Ready";
+  if (els.amsStatusTop) els.amsStatusTop.textContent = "Shopee Ready";
+  if (els.floatingAmsStatus) els.floatingAmsStatus.textContent = "Shopee Ready";
 }
 
 function formatResearchMessage(message) {
@@ -404,7 +411,8 @@ function formatResearchMessage(message) {
     .replace(/produk Affiliate/gi, "trends Shopee")
     .replace(/Produk Affiliate/gi, "Trends Shopee")
     .replace(/Affiliate/gi, "Trends Shopee")
-    .replace(/Shopee AMS API belum dikonfigurasi/gi, "Shopee belum mengambil data trends");
+    .replace(/Shopee AMS API belum dikonfigurasi/gi, "Shopee belum mengambil data trends")
+    .replace(/Menunggu approval AMS Shopee/gi, "Shopee Ready");
 }
 
 function formatSourceErrors(errors) {
@@ -477,12 +485,13 @@ function renderSourcePage(source) {
   }
   if (source === "shopee") {
     els.shopeeCount.textContent = `${items.length} produk`;
-    renderGrid(els.shopeeRows, items.length ? visibleItems.map((item) => renderShopeeCard(item)).join("") + controls : shopeePendingMessage(error));
+    const summary = currentShopeeStats ? renderShopeeAmsSummary(currentShopeeStats, items.length) : "";
+    renderGrid(els.shopeeRows, items.length ? summary + visibleItems.map((item) => renderShopeeCard(item)).join("") + controls : summary + shopeePendingMessage(error));
   }
 }
 
 function shopeePendingMessage(error) {
-  return emptyMessage(error || "Menunggu approval AMS Shopee", "Hasil YT Viral dan Peluang tetap tampil. Data Shopee akan aktif otomatis setelah AMS disetujui.");
+  return emptyMessage(error || "Shopee Ready, belum ada produk AMS yang cocok.", "Coba keyword lain atau cek periode performance AMS di Seller Centre.");
 }
 
 function renderGrid(target, html) {
@@ -514,7 +523,7 @@ function updateStatusFromState(state, done) {
 }
 
 function simpleSourceError(source) {
-  if (source === "shopee") return "Menunggu approval AMS Shopee";
+  if (source === "shopee") return "Shopee Ready, belum ada produk AMS yang cocok";
   return "YouTube Shorts belum tersedia";
 }
 
@@ -621,15 +630,25 @@ function renderOpportunityCard(item, index = 0) {
 function renderShopeeCard(item) {
   const manual = item.validationStatus === "manual-keyword" || String(item.item_id || "").startsWith("manual-shopee");
   const realSearchProduct = item.validationStatus === "shopee-search-product";
+  const amsProduct = item.validationStatus === "shopee-ams-production" || item.source === "shopee-ams-production";
+  const productName = item.item_name || item.name || "Produk Shopee";
+  const commissionRate = Number(item.commission_rate ?? item.commissionRate ?? 0);
   return `
     <article class="result-card">
-      ${renderImage(item.image, item.name, "Shopee", item)}
+      ${renderImage(item.image_url || item.image, productName, "Shopee", item)}
       <div class="result-body">
         <div class="card-topline">${renderBadge(item.label)}<span class="score-pill">${formatNumber(item.score)} score</span></div>
-        <h3>${escapeHtml(item.name)}</h3>
-        <p class="price">${escapeHtml(manual ? "Validasi manual Shopee" : item.price || (item.sales ? `Sales ${formatCurrency(item.sales)}` : "Sales belum tersedia"))}</p>
-        <p class="meta">${escapeHtml(manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? item.reason || "Produk real dari hasil pencarian Shopee." : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
-        ${renderStats(realSearchProduct ? [
+        <h3>${escapeHtml(productName)}</h3>
+        <p class="price">${escapeHtml(amsProduct ? item.price || "Harga AMS belum tersedia" : manual ? "Validasi manual Shopee" : item.price || (item.sales ? `Sales ${formatCurrency(item.sales)}` : "Sales belum tersedia"))}</p>
+        <p class="meta">${escapeHtml(amsProduct ? `AMS Production - Komisi ${formatPercent(commissionRate)} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? item.reason || "Produk real dari hasil pencarian Shopee." : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
+        ${renderStats(amsProduct ? [
+          ["Sales", item.sales || 0],
+          ["Harga", item.price || "-"],
+          ["Komisi", formatPercent(commissionRate)],
+          ["Toko", item.shop_name || item.shopName || "-"],
+          ["Terjual", item.items_sold || item.soldCount || 0],
+          ["Peluang", formatChance(item.chance ?? item.score)]
+        ] : realSearchProduct ? [
           ["Total Penjualan", item.soldCount || item.items_sold || 0],
           ["Rating", item.rating ? Number(item.rating).toFixed(1) : "-"],
           ["Ulasan", item.reviewCount || 0],
@@ -644,6 +663,25 @@ function renderShopeeCard(item) {
           ["Peluang", formatChance(item.chance ?? item.score)]
         ])}
         <div class="button-row quick-actions">${renderOpenButton(item.url, manual ? "Cari di Shopee" : "Buka Produk")}${renderQuickActions(item)}</div>
+      </div>
+    </article>
+  `;
+}
+
+function renderShopeeAmsSummary(stats, visibleCount) {
+  const top = stats.topCommissionProduct || {};
+  return `
+    <article class="result-card shopee-summary-card">
+      <div class="result-body">
+        <div class="card-topline">${renderBadge("HOT")}<span class="score-pill">AMS Production</span></div>
+        <h3>Shopee Ready</h3>
+        <p class="meta">Data Shopee Trends sekarang memakai AMS Production, bukan mock/demo.</p>
+        ${renderStats([
+          ["Produk AMS", stats.productCount ?? visibleCount ?? 0],
+          ["Rata-rata Komisi", formatPercent(stats.averageCommissionRate || 0)],
+          ["Top Komisi", top.commission_rate ? formatPercent(top.commission_rate) : "-"],
+          ["Top Produk", top.item_name || "-"]
+        ])}
       </div>
     </article>
   `;
@@ -1052,6 +1090,34 @@ function formatNumber(value) {
 function formatChance(value) {
   const number = Number(value || 0);
   return `${Math.max(0, Math.min(100, Math.round(number)))}%`;
+}
+
+function formatPercent(value) {
+  const number = Number(value || 0);
+  if (!Number.isFinite(number)) return "0%";
+  return `${Math.round(number * 100) / 100}%`;
+}
+
+function buildShopeeStats(products) {
+  const count = products.length;
+  const averageCommissionRate = count
+    ? Math.round((products.reduce((sum, item) => sum + Number(item.commission_rate || item.commissionRate || 0), 0) / count) * 100) / 100
+    : 0;
+  const topCommissionProduct = [...products]
+    .sort((a, b) => Number(b.commission_rate || b.commissionRate || 0) - Number(a.commission_rate || a.commissionRate || 0))[0] || null;
+  return {
+    productCount: count,
+    averageCommissionRate,
+    topCommissionProduct: topCommissionProduct ? {
+      item_id: topCommissionProduct.item_id,
+      item_name: topCommissionProduct.item_name || topCommissionProduct.name,
+      commission_rate: topCommissionProduct.commission_rate || topCommissionProduct.commissionRate || 0,
+      image_url: topCommissionProduct.image_url || topCommissionProduct.image || "",
+      price: topCommissionProduct.price || "",
+      shop_name: topCommissionProduct.shop_name || topCommissionProduct.shopName || "",
+      url: topCommissionProduct.url || ""
+    } : null
+  };
 }
 
 function confidenceLabel(value) {
