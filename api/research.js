@@ -27,11 +27,27 @@ module.exports = async function handler(req, res) {
       maxKeywords: mode === "category" ? 2 : 1
     });
     const shorts = shortsResult.items || [];
-    const amsResult = await getAmsProductsFromRequest(req, { page_no: 1, page_size: 10 });
+    const amsResult = await getAmsProductsFromRequest(req, {
+      page_no: 1,
+      page_size: 10,
+      query: resolvedKeyword,
+      category: mode === "category" ? category : ""
+    });
     if (amsResult.setCookies) res.setHeader("Set-Cookie", amsResult.setCookies);
-    const products = filterProductsByKeyword(amsResult.items || [], resolvedKeyword);
+    const shopeeFilter = filterProductsByResearch(amsResult.items || [], {
+      mode,
+      keyword,
+      category,
+      resolvedKeyword
+    });
+    const products = shopeeFilter.items;
     const opportunities = buildOpportunities(shorts, products);
-    const shopeeStats = amsResult.stats || buildShopeeStats(products);
+    const shopeeStats = buildShopeeStats(products);
+    const shopeeMessage = products.length
+      ? "Shopee Ready."
+      : shopeeFilter.rawCount
+        ? "Tidak ada produk Shopee relevan untuk kategori ini"
+        : amsResult.message || amsResult.error || "Shopee belum mengambil data trends.";
 
     return res.status(200).json({
       ok: true,
@@ -52,16 +68,24 @@ module.exports = async function handler(req, res) {
       shopeeStats,
       shopeeStatus: {
         ready: Boolean(amsResult.ok),
-        message: amsResult.message || amsResult.error || "",
+        message: shopeeMessage,
         tokenSource: amsResult.tokenSource || "",
         shopId: amsResult.shopId || null,
         rawItemCount: amsResult.rawItemCount || 0,
-        mappedItemCount: amsResult.mappedItemCount || products.length
+        mappedItemCount: amsResult.mappedItemCount || 0,
+        relevantItemCount: products.length,
+        fallbackSearchUrl: shopeeFilter.fallbackSearchUrl
       },
       debug: {
         youtube: [shortsResult.debug || {}],
         shopee: {
           ok: Boolean(amsResult.ok),
+          shopee_query: shopeeFilter.query,
+          shopee_raw_count: shopeeFilter.rawCount,
+          shopee_relevant_count: shopeeFilter.relevantCount,
+          filtered_out_reason: shopeeFilter.filteredOutReason,
+          fallback_search_url: shopeeFilter.fallbackSearchUrl,
+          terms: shopeeFilter.terms,
           tokenSource: amsResult.tokenSource || "",
           shopId: amsResult.shopId || null,
           rawItemCount: amsResult.rawItemCount || 0,
@@ -70,7 +94,7 @@ module.exports = async function handler(req, res) {
         },
         serverless: true
       },
-      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee AMS, ${opportunities.length} peluang.${amsResult.ok ? " Shopee Ready." : ` ${amsResult.error || "Shopee belum mengambil data trends."}`}`
+      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee AMS, ${opportunities.length} peluang. ${shopeeMessage}`
     });
   } catch (error) {
     console.error("[api/research] failed", {
@@ -259,15 +283,100 @@ function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-function filterProductsByKeyword(products, keyword) {
-  const terms = cleanText(keyword).toLowerCase().split(/\s+/).filter((term) => term.length > 2);
-  if (!terms.length) return products;
-  const matched = products.filter((product) => {
-    const text = `${product.item_name || ""} ${product.name || ""}`.toLowerCase();
-    return terms.some((term) => text.includes(term));
+function filterProductsByResearch(products, context = {}) {
+  const query = buildShopeeQuery(context);
+  const terms = buildShopeeTerms(context);
+  const negativeTerms = buildNegativeTerms(context.category);
+  const fallbackSearchUrl = `https://shopee.co.id/search?keyword=${encodeURIComponent(query)}`;
+  const decisions = (products || []).map((product) => {
+    const text = normalizeForMatch(`${product.item_name || ""} ${product.name || ""} ${product.shop_name || ""} ${product.shopName || ""}`);
+    const negativeMatches = negativeTerms.filter((term) => text.includes(term));
+    const positiveMatches = terms.filter((term) => text.includes(term));
+    const relevant = positiveMatches.length > 0 && negativeMatches.length === 0;
+    return {
+      product,
+      relevant,
+      reason: relevant
+        ? `matched:${positiveMatches.slice(0, 3).join("|")}`
+        : negativeMatches.length
+          ? `rejected_negative:${negativeMatches.slice(0, 3).join("|")}`
+          : "no_keyword_or_category_match"
+    };
   });
-  return matched.length ? matched : products;
+  const items = decisions.filter((item) => item.relevant).map((item) => ({
+    ...item.product,
+    matched_query: query,
+    fallback_search_url: item.product.fallback_search_url || fallbackSearchUrl
+  }));
+  const filtered = decisions.filter((item) => !item.relevant);
+  return {
+    items,
+    query,
+    terms,
+    rawCount: products.length,
+    relevantCount: items.length,
+    fallbackSearchUrl,
+    filteredOutReason: filtered.slice(0, 10).map((item) => ({
+      item_id: item.product.item_id || "",
+      item_name: item.product.item_name || item.product.name || "",
+      reason: item.reason
+    }))
+  };
 }
+
+function buildShopeeQuery({ mode, keyword, category, resolvedKeyword }) {
+  if (mode === "category" && category) return category;
+  return cleanText(keyword || resolvedKeyword || "produk viral indonesia");
+}
+
+function buildShopeeTerms({ mode, keyword, category, resolvedKeyword }) {
+  const raw = [
+    keyword,
+    resolvedKeyword,
+    mode === "category" ? category : "",
+    ...(mode === "category" ? getCategoryKeywords(category) : [])
+  ].filter(Boolean);
+  const expanded = raw.flatMap((value) => expandShopeeTerm(value));
+  return [...new Set(expanded.map(normalizeForMatch).filter((term) => term.length > 2 && !GENERIC_MATCH_TERMS.has(term)))];
+}
+
+function expandShopeeTerm(value) {
+  const text = cleanText(value).toLowerCase();
+  const words = text.split(/\s+/).filter(Boolean);
+  const terms = [text, ...words];
+  const synonymGroups = [
+    ["dapur", "masak", "kitchen", "panci", "wajan", "spatula", "pisau", "sendok", "rak dapur", "kompor", "gelas", "botol", "mangkuk"],
+    ["bayi", "baby", "anak", "kids", "balita", "mainan", "stroller", "botol susu", "popok", "makan bayi"],
+    ["rumah", "pembersih", "pel", "sapu", "rak", "storage", "organizer", "hanger", "dekorasi"],
+    ["fashion wanita", "wanita", "dress", "gamis", "rok", "tas wanita", "heels", "blouse"],
+    ["fashion pria", "pria", "cowok", "kaos", "kemeja", "celana", "sepatu", "boxer"],
+    ["gadget", "charger", "case", "holder", "earphone", "powerbank", "stand hp", "aksesoris hp"]
+  ];
+  synonymGroups.forEach((group) => {
+    if (group.some((term) => text.includes(term))) terms.push(...group);
+  });
+  return terms;
+}
+
+function buildNegativeTerms(category) {
+  const key = cleanText(category).toLowerCase();
+  if (!key) return [];
+  const fashionTerms = ["boxer", "celana", "baju", "kaos", "kemeja", "dress", "gamis", "rok", "bra", "pakaian", "fashion", "outfit"];
+  if (key.includes("dapur") || key.includes("rumah") || key.includes("baby") || key.includes("kids")) return fashionTerms;
+  if (key.includes("fashion")) return ["panci", "wajan", "pisau", "spatula", "sapu", "pel", "popok", "botol susu"];
+  return [];
+}
+
+function normalizeForMatch(value) {
+  return cleanText(value)
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const GENERIC_MATCH_TERMS = new Set(["alat", "produk", "viral", "murah", "terlaris", "perlengkapan", "rekomendasi", "shop", "shopee"]);
 
 function buildShopeeStats(products) {
   const count = products.length;

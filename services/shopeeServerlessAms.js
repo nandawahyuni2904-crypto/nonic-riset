@@ -13,9 +13,10 @@ async function getAmsProductsFromRequest(req, options = {}) {
   const partnerId = String(process.env.SHOPEE_PARTNER_ID || "").trim();
   const partnerKey = String(process.env.SHOPEE_PARTNER_KEY || "").trim();
   const environment = String(process.env.SHOPEE_ENV || "production").trim().toLowerCase() || "production";
+  const { query = "", category = "", ...amsParams } = options || {};
   const params = {
     ...DEFAULT_AMS_PARAMS,
-    ...options
+    ...amsParams
   };
 
   if (!partnerId || !partnerKey) {
@@ -102,6 +103,8 @@ async function getAmsProductsFromRequest(req, options = {}) {
       mappedItemCount: items.length,
       tokenSource: tokenInfo.source,
       shopId: tokenInfo.shopId,
+      shopeeQuery: query,
+      shopeeCategory: category,
       stats: buildAmsStats(items),
       setCookies,
       message: items.length ? "Shopee Ready" : "Shopee Ready, belum ada produk AMS pada periode ini."

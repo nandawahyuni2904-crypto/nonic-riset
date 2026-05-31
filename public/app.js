@@ -426,7 +426,7 @@ function renderResearch(data) {
   resetSectionPaging();
 
   renderSource("youtube", applyVideoFilters(shorts), "");
-  renderSource("shopee", products, "");
+  renderSource("shopee", products, products.length ? "" : data.shopeeStatus?.message || "");
   renderSource("tiktok", opportunities, "");
   updateResultTabCounts(opportunities.length, shorts.length, products.length);
   renderKeywordRecommendations(recommendations);
@@ -677,7 +677,7 @@ function renderProductResearch(data) {
   resetSectionPaging();
   renderSource("tiktok", opportunities, "");
   renderSource("youtube", youtubeItems, errors.find((error) => error.startsWith("YouTube gagal")) || "");
-  renderSource("shopee", shopeeItems, "");
+  renderSource("shopee", shopeeItems, shopeeItems.length ? "" : data.shopeeStatus?.message || "");
   scrollToFirstResult();
 }
 
