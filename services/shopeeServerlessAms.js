@@ -237,6 +237,7 @@ function normalizeAmsProduct(item, index) {
   const score = scoreAmsProduct({ commissionRate, sales, itemsSold, orders, clicks, roi, index });
   const imageUrl = item.image_url || item.image || item.item_image || item.product_image || "";
   const url = item.product_link || item.item_url || item.url || buildShopeeProductUrl(itemId, name);
+  const campaignStatus = item.campaign_status || item.status || item.product_status || item.campaignStatus || "";
   return {
     source: "shopee-ams-production",
     item_id: itemId,
@@ -251,6 +252,8 @@ function normalizeAmsProduct(item, index) {
     priceValue: toNumber(price),
     shop_name: cleanText(item.shop_name || item.shop || item.seller_name || item.store_name),
     shopName: cleanText(item.shop_name || item.shop || item.seller_name || item.store_name),
+    campaign_status: campaignStatus,
+    campaignStatus,
     items_sold: itemsSold,
     soldCount: itemsSold,
     orders,

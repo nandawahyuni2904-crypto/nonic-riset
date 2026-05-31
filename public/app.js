@@ -123,6 +123,7 @@ init();
 async function init() {
   initTheme();
   initResultTabs();
+  initSidebarNavigation();
   showShopeeCallbackMessage();
   try {
     const status = await fetchJson("/api/status");
@@ -233,13 +234,54 @@ els.menuToggle?.addEventListener("click", () => {
   document.body.classList.toggle("sidebar-open");
 });
 
-document.querySelectorAll(".side-nav a").forEach((link) => {
-  link.addEventListener("click", () => {
-    document.querySelectorAll(".side-nav a").forEach((item) => item.classList.remove("is-active"));
-    link.classList.add("is-active");
-    document.body.classList.remove("sidebar-open");
+function initSidebarNavigation() {
+  const pages = {
+    "trending-now": "dashboard",
+    "emerging-products": "products",
+    "viral-discovery": "discovery",
+    "keyword-insights": "keyword",
+    analytics: "analytics"
+  };
+  document.querySelectorAll(".side-nav a").forEach((link) => {
+    const target = String(link.getAttribute("href") || "").replace("#", "");
+    const page = pages[target] || "dashboard";
+    link.dataset.page = page;
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      setDashboardPage(page);
+      document.querySelectorAll(".side-nav a").forEach((item) => item.classList.toggle("is-active", item === link));
+      document.body.classList.remove("sidebar-open");
+    });
   });
-});
+  document.querySelector('.side-nav a[data-page="dashboard"]')?.classList.add("is-active");
+}
+
+function setDashboardPage(page) {
+  document.body.dataset.dashboardPage = page;
+  const show = (selector, visible) => document.querySelectorAll(selector).forEach((item) => {
+    item.hidden = !visible;
+  });
+  const showMainWorkflow = page === "dashboard" || page === "discovery" || page === "products";
+  show(".landing-panel", page === "dashboard");
+  show("#trending-now", showMainWorkflow);
+  show("#analytics", page === "dashboard" || page === "analytics" || page === "discovery");
+  show("#researchStatus, .filter-panel, .results-tabs", showMainWorkflow);
+  show("#emerging-products", page === "products" || page === "dashboard");
+  show("#keywordInsightPanel", page === "keyword");
+  show("#keyword-insights", page === "keyword" || page === "analytics");
+  show("#viral-discovery", page === "analytics" || page === "discovery");
+  show(".data-section[data-section]", showMainWorkflow);
+  if (page === "products" || page === "discovery" || page === "dashboard") setActiveResultsTab("opportunities");
+  if (page === "keyword") renderKeywordRecommendations(lastResearchData?.keywordRecommendations || []);
+  const target = page === "products"
+    ? document.querySelector("#emerging-products")
+    : page === "keyword"
+      ? document.querySelector("#keyword-insights")
+      : page === "analytics"
+        ? document.querySelector("#analytics")
+        : document.querySelector("#trending-now");
+  target?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 document.addEventListener("click", (event) => {
   if (!event.target.closest(".app-sidebar, .menu-toggle") && document.body.classList.contains("sidebar-open")) {
@@ -367,7 +409,7 @@ els.productSearch.addEventListener("click", async () => {
 
 function renderResearch(data) {
   const shorts = Array.isArray(data.shorts || data.youtube) ? data.shorts || data.youtube || [] : [];
-  const products = Array.isArray(data.products || data.shopee) ? data.products || data.shopee || [] : [];
+  const products = extractShopeeItems(data);
   const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
   const recommendations = data.keywordRecommendations || data.keyword_recommendations || data.debug?.youtube?.flatMap((item) => item.keywordRecommendations || []) || buildClientKeywordRecommendations(shorts);
   const derived = data.topKeywordTurunan || recommendations;
@@ -390,6 +432,45 @@ function renderResearch(data) {
   updateShopeeTrendBadge(products.length);
   const shopeeNote = products.length ? " Shopee Ready." : " Shopee Ready, belum ada produk AMS yang cocok.";
   setResearchStatus(formatResearchMessage(data.message || `Selesai. ${opportunities.length} peluang, ${shorts.length} video viral, ${products.length} trends Shopee.${shopeeNote}`), shorts.length || opportunities.length || products.length ? "success" : "warning");
+}
+
+function extractShopeeItems(data = {}) {
+  const candidates = [
+    data.products,
+    data.shopee,
+    data.shopee?.items,
+    data.shopee?.products,
+    data.shopee?.data?.items,
+    data.shopee?.response?.items,
+    data.shopee?.response?.item_list,
+    data.amsProducts,
+    data.shopeeTrends
+  ];
+  const items = candidates.find(Array.isArray) || [];
+  return items.map(normalizeShopeeDisplayItem).filter((item) => item.item_id || item.name || item.item_name);
+}
+
+function normalizeShopeeDisplayItem(item = {}) {
+  const name = item.item_name || item.name || item.product_name || item.title || "Produk Shopee";
+  const image = item.image_url || item.image || item.item_image || item.product_image || "";
+  const commissionRate = item.commission_rate ?? item.commissionRate ?? item.commission_ratio ?? item.rate ?? 0;
+  return {
+    ...item,
+    source: item.source || "shopee-ams-production",
+    validationStatus: item.validationStatus || "shopee-ams-production",
+    item_id: item.item_id || item.itemid || item.product_id || "",
+    item_name: name,
+    name,
+    image_url: image,
+    image,
+    commission_rate: commissionRate,
+    commissionRate,
+    campaign_status: item.campaign_status || item.campaignStatus || item.status || "-",
+    price: item.price || item.item_price || "",
+    shop_name: item.shop_name || item.shopName || item.shop || "",
+    shopName: item.shopName || item.shop_name || item.shop || "",
+    url: item.url || item.product_link || item.item_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(name)}`
+  };
 }
 
 function updateShopeeTrendBadge(count) {
@@ -642,6 +723,8 @@ function renderShopeeCard(item) {
         <p class="price">${escapeHtml(amsProduct ? item.price || "Harga AMS belum tersedia" : manual ? "Validasi manual Shopee" : item.price || (item.sales ? `Sales ${formatCurrency(item.sales)}` : "Sales belum tersedia"))}</p>
         <p class="meta">${escapeHtml(amsProduct ? `AMS Production - Komisi ${formatPercent(commissionRate)} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? item.reason || "Produk real dari hasil pencarian Shopee." : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
         ${renderStats(amsProduct ? [
+          ["Item ID", item.item_id || "-"],
+          ["Status", item.campaign_status || item.campaignStatus || "-"],
           ["Sales", item.sales || 0],
           ["Harga", item.price || "-"],
           ["Komisi", formatPercent(commissionRate)],
@@ -662,7 +745,7 @@ function renderShopeeCard(item) {
           ["Buyer Baru", item.new_buyers],
           ["Peluang", formatChance(item.chance ?? item.score)]
         ])}
-        <div class="button-row quick-actions">${renderOpenButton(item.url, manual ? "Cari di Shopee" : "Buka Produk")}${renderQuickActions(item)}</div>
+        <div class="button-row quick-actions">${renderOpenButton(item.url, "Cari di Shopee")}${renderQuickActions(item)}</div>
       </div>
     </article>
   `;

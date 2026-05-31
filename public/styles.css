@@ -6551,6 +6551,95 @@ body {
   color: #fff7ed;
 }
 
+/* UI behavior fixes: readable alerts, compact filters, functional tab visibility */
+.app-main [hidden] {
+  display: none !important;
+}
+
+.data-section[data-section] {
+  display: none;
+}
+
+.data-section[data-section].is-active:not([hidden]) {
+  display: block !important;
+}
+
+.research-status {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding-left: 46px !important;
+  line-height: 1.45;
+}
+
+.research-status::before {
+  position: absolute !important;
+  left: 18px !important;
+  top: 50% !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+}
+
+.filter-panel {
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-panel label {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: max-content;
+  padding: 0 10px !important;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.filter-panel label input[type="checkbox"] {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  top: auto !important;
+  flex: 0 0 30px;
+  width: 30px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.filter-panel label input[type="checkbox"]::after {
+  top: 2px !important;
+  left: 2px !important;
+}
+
+.filter-panel label input[type="checkbox"]:checked::after {
+  left: 16px !important;
+}
+
+.side-nav a:first-child:not(.is-active) {
+  color: var(--muted);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.placeholder-thumb {
+  display: grid;
+  min-height: 132px;
+  place-items: center;
+  color: #cbd5e1;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(20, 184, 166, 0.24), transparent 12rem),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.78));
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
 @media (max-width: 900px) {
   .result-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
