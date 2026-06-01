@@ -2,6 +2,11 @@ const { getCategoryKeywords } = require("../services/categories");
 const { buildOpportunities, fetchYouTubeShortsIndonesia } = require("../services/shortsResearch");
 const { labelScore } = require("../services/scoring");
 const { getAmsProductsFromRequest } = require("../services/shopeeServerlessAms");
+const { discoverShopeeProducts } = require("../services/shopeeSearchDiscovery");
+
+const SHOPEE_MIN_RATING = 4.7;
+const SHOPEE_MIN_REVIEWS = 1000;
+const SHOPEE_PRODUCT_LIMIT = 8;
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -27,12 +32,26 @@ module.exports = async function handler(req, res) {
       maxKeywords: mode === "category" ? 2 : 1
     });
     const shorts = shortsResult.items || [];
-    const amsResult = await getAmsProductsFromRequest(req, {
-      page_no: 1,
-      page_size: 10,
-      query: resolvedKeyword,
-      category: mode === "category" ? category : ""
-    });
+    const shopeeContext = { mode, keyword, category, resolvedKeyword };
+    const shopeeQuery = buildShopeeQuery(shopeeContext);
+    const shopeeTerms = buildShopeeTerms(shopeeContext);
+    const shopeeNegativeTerms = buildNegativeTerms(category);
+    const [amsResult, searchResult] = await Promise.all([
+      getAmsProductsFromRequest(req, {
+        page_no: 1,
+        page_size: 10,
+        query: shopeeQuery,
+        category: mode === "category" ? category : ""
+      }),
+      discoverShopeeProducts({
+        query: shopeeQuery,
+        terms: shopeeTerms,
+        negativeTerms: shopeeNegativeTerms,
+        limit: SHOPEE_PRODUCT_LIMIT,
+        minRating: SHOPEE_MIN_RATING,
+        minReviews: SHOPEE_MIN_REVIEWS
+      })
+    ]);
     if (amsResult.setCookies) res.setHeader("Set-Cookie", amsResult.setCookies);
     const shopeeFilter = filterProductsByResearch(amsResult.items || [], {
       mode,
@@ -40,12 +59,13 @@ module.exports = async function handler(req, res) {
       category,
       resolvedKeyword
     });
-    const products = shopeeFilter.items;
+    const products = mergeShopeeDiscoveryProducts(searchResult.items || [], shopeeFilter.items, shopeeQuery).slice(0, SHOPEE_PRODUCT_LIMIT);
     const opportunities = buildOpportunities(shorts, products);
     const shopeeStats = buildShopeeStats(products);
+    const sourceUsed = resolveShopeeSourceUsed({ searchItems: searchResult.items || [], amsItems: shopeeFilter.items || [] });
     const shopeeMessage = products.length
       ? "Shopee Ready."
-      : shopeeFilter.rawCount
+      : (shopeeFilter.rawCount || searchResult.debug?.raw_count)
         ? "Tidak ada produk Shopee relevan untuk kategori ini"
         : amsResult.message || amsResult.error || "Shopee belum mengambil data trends.";
 
@@ -71,21 +91,31 @@ module.exports = async function handler(req, res) {
         message: shopeeMessage,
         tokenSource: amsResult.tokenSource || "",
         shopId: amsResult.shopId || null,
-        rawItemCount: amsResult.rawItemCount || 0,
-        mappedItemCount: amsResult.mappedItemCount || 0,
+        rawItemCount: (searchResult.debug?.raw_count || 0) + (amsResult.rawItemCount || 0),
+        mappedItemCount: (searchResult.rawItems?.length || 0) + (amsResult.mappedItemCount || 0),
         relevantItemCount: products.length,
-        fallbackSearchUrl: shopeeFilter.fallbackSearchUrl
+        fallbackSearchUrl: shopeeFilter.fallbackSearchUrl,
+        sourceUsed,
+        minRating: SHOPEE_MIN_RATING,
+        minReviews: SHOPEE_MIN_REVIEWS
       },
       debug: {
         youtube: [shortsResult.debug || {}],
         shopee: {
           ok: Boolean(amsResult.ok),
-          shopee_query: shopeeFilter.query,
-          shopee_raw_count: shopeeFilter.rawCount,
-          shopee_relevant_count: shopeeFilter.relevantCount,
+          shopee_query: shopeeQuery,
+          source_used: sourceUsed,
+          raw_count: (searchResult.debug?.raw_count || 0) + shopeeFilter.rawCount,
+          filtered_count: products.length,
+          min_rating: SHOPEE_MIN_RATING,
+          min_reviews: SHOPEE_MIN_REVIEWS,
+          shopee_raw_count: (searchResult.debug?.raw_count || 0) + shopeeFilter.rawCount,
+          shopee_relevant_count: products.length,
           filtered_out_reason: shopeeFilter.filteredOutReason,
           fallback_search_url: shopeeFilter.fallbackSearchUrl,
           terms: shopeeFilter.terms,
+          search: searchResult.debug || {},
+          amsRelevantCount: shopeeFilter.relevantCount,
           tokenSource: amsResult.tokenSource || "",
           shopId: amsResult.shopId || null,
           rawItemCount: amsResult.rawItemCount || 0,
@@ -94,7 +124,7 @@ module.exports = async function handler(req, res) {
         },
         serverless: true
       },
-      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee AMS, ${opportunities.length} peluang. ${shopeeMessage}`
+      message: `Riset selesai: ${shorts.length} video viral, ${products.length} trends Shopee, ${opportunities.length} peluang. ${shopeeMessage}`
     });
   } catch (error) {
     console.error("[api/research] failed", {
@@ -322,6 +352,52 @@ function filterProductsByResearch(products, context = {}) {
       reason: item.reason
     }))
   };
+}
+
+function mergeShopeeDiscoveryProducts(searchItems, amsItems, query) {
+  const amsByItemId = new Map((amsItems || []).filter((item) => item.item_id).map((item) => [String(item.item_id), item]));
+  const amsByName = new Map((amsItems || []).map((item) => [normalizeForMatch(item.item_name || item.name), item]).filter(([key]) => key));
+  const merged = [];
+  const seen = new Set();
+
+  (searchItems || []).forEach((item) => {
+    const id = String(item.item_id || item.itemid || "");
+    const nameKey = normalizeForMatch(item.item_name || item.name);
+    const ams = amsByItemId.get(id) || amsByName.get(nameKey) || null;
+    const key = id || nameKey;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    merged.push({
+      ...item,
+      source: ams ? "Shopee Search + AMS" : "Shopee Search",
+      validationStatus: ams ? "shopee-search-ams-product" : "shopee-search-product",
+      commission_rate: ams?.commission_rate ?? item.commission_rate ?? 0,
+      commissionRate: ams?.commissionRate ?? item.commissionRate ?? 0,
+      campaign_status: ams?.campaign_status || item.campaign_status || "",
+      campaignStatus: ams?.campaignStatus || item.campaignStatus || "",
+      fallback_search_url: item.fallback_search_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(query || item.item_name || item.name || "")}`
+    });
+  });
+
+  (amsItems || []).forEach((item) => {
+    const key = String(item.item_id || "") || normalizeForMatch(item.item_name || item.name);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    merged.push({
+      ...item,
+      source: "AMS",
+      fallback_search_url: item.fallback_search_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(query || item.item_name || item.name || "")}`
+    });
+  });
+
+  return merged.sort((a, b) => Number(b.score || b.chance || 0) - Number(a.score || a.chance || 0));
+}
+
+function resolveShopeeSourceUsed({ searchItems, amsItems }) {
+  if (searchItems.length && amsItems.length) return "Shopee Search + AMS";
+  if (searchItems.length) return "Shopee Search";
+  if (amsItems.length) return "AMS";
+  return "none";
 }
 
 function buildShopeeQuery({ mode, keyword, category, resolvedKeyword }) {

@@ -477,6 +477,11 @@ function normalizeShopeeDisplayItem(item = {}) {
     commissionRate,
     campaign_status: item.campaign_status || item.campaignStatus || item.status || "-",
     price: item.price || item.item_price || "",
+    rating: Number(item.rating || 0),
+    reviewCount: Number(item.reviewCount || item.reviews || item.review_count || 0),
+    reviews: Number(item.reviews || item.reviewCount || item.review_count || 0),
+    soldCount: Number(item.soldCount || item.items_sold || item.sold || 0),
+    items_sold: Number(item.items_sold || item.soldCount || item.sold || 0),
     shop_name: item.shop_name || item.shopName || item.shop || "",
     shopName: item.shopName || item.shop_name || item.shop || "",
     product_url: directUrl,
@@ -514,8 +519,8 @@ function formatSourceErrors(errors) {
 }
 
 function resetSectionPaging() {
-  Object.values(sectionState).forEach((state) => {
-    state.visible = 3;
+  Object.entries(sectionState).forEach(([source, state]) => {
+    state.visible = source === "shopee" ? 8 : 3;
   });
 }
 
@@ -559,7 +564,8 @@ function renderSource(source, items, error) {
   sectionState[source] = sectionState[source] || { visible: 3, items: [], error: "" };
   sectionState[source].items = items || [];
   sectionState[source].error = error || "";
-  sectionState[source].visible = Math.min(sectionState[source].visible || 3, Math.max(3, sectionState[source].items.length));
+  const minVisible = source === "shopee" ? 8 : 3;
+  sectionState[source].visible = Math.min(sectionState[source].visible || minVisible, Math.max(minVisible, sectionState[source].items.length));
   renderSourcePage(source);
 }
 
@@ -602,7 +608,8 @@ function renderGrid(target, html) {
 }
 
 function renderShowMore(source, total, visible) {
-  if (total <= 3) return "";
+  const minVisible = source === "shopee" ? 8 : 3;
+  if (total <= minVisible) return "";
   const done = visible >= total;
   return `<div class="show-more-wrap"><button class="show-more" type="button" data-source="${source}" data-action="${done ? "less" : "more"}">${done ? "Show less" : "Show more"}</button></div>`;
 }
@@ -732,13 +739,14 @@ function renderOpportunityCard(item, index = 0) {
 
 function renderShopeeCard(item) {
   const manual = item.validationStatus === "manual-keyword" || String(item.item_id || "").startsWith("manual-shopee");
-  const realSearchProduct = item.validationStatus === "shopee-search-product";
+  const realSearchProduct = item.validationStatus === "shopee-search-product" || item.validationStatus === "shopee-search-ams-product" || item.source === "Shopee Search" || item.source === "Shopee Search + AMS";
   const amsProduct = item.validationStatus === "shopee-ams-production" || item.source === "shopee-ams-production";
   const productName = item.item_name || item.name || "Produk Shopee";
   const commissionRate = Number(item.commission_rate ?? item.commissionRate ?? 0);
   const directProductUrl = item.product_url || item.item_url || "";
   const fallbackSearchUrl = item.fallback_search_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(productName)}`;
-  const shopeeUrl = amsProduct ? directProductUrl || fallbackSearchUrl : item.url;
+  const shopeeUrl = directProductUrl || item.url || fallbackSearchUrl;
+  const sourceLabel = item.source || (amsProduct ? "AMS" : "Shopee Search");
   return `
     <article class="result-card">
       ${renderImage(item.image_url || item.image, productName, "Shopee", item)}
@@ -746,8 +754,8 @@ function renderShopeeCard(item) {
         <div class="card-topline">${renderBadge(item.label)}<span class="score-pill">${formatNumber(item.score)} score</span></div>
         <h3>${escapeHtml(productName)}</h3>
         <p class="price">${escapeHtml(amsProduct ? item.price || "Harga AMS belum tersedia" : manual ? "Validasi manual Shopee" : item.price || (item.sales ? `Sales ${formatCurrency(item.sales)}` : "Sales belum tersedia"))}</p>
-        <p class="meta">${escapeHtml(amsProduct ? `AMS Production - Komisi ${formatPercent(commissionRate)} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? item.reason || "Produk real dari hasil pencarian Shopee." : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
-        ${amsProduct && !directProductUrl ? `<p class="meta link-fallback-note">Link produk belum tersedia, memakai pencarian Shopee</p>` : ""}
+        <p class="meta">${escapeHtml(amsProduct ? `AMS Production - Komisi ${formatPercent(commissionRate)} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? `${sourceLabel} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
+        ${(amsProduct || realSearchProduct) && !directProductUrl ? `<p class="meta link-fallback-note">Link produk belum tersedia, memakai pencarian Shopee</p>` : ""}
         ${renderStats(amsProduct ? [
           ["Item ID", item.item_id || "-"],
           ["Product URL", directProductUrl ? "tersedia" : "-"],
@@ -758,10 +766,12 @@ function renderShopeeCard(item) {
           ["Toko", item.shop_name || item.shopName || "-"],
           ["Peluang", formatChance(item.chance ?? item.score)]
         ] : realSearchProduct ? [
-          ["Total Penjualan", item.soldCount || item.items_sold || 0],
+          ["Source", sourceLabel],
+          ["Terjual", item.soldCount || item.items_sold || 0],
           ["Rating", item.rating ? Number(item.rating).toFixed(1) : "-"],
-          ["Ulasan", item.reviewCount || 0],
+          ["Reviews", item.reviewCount || item.reviews || 0],
           ["Toko", item.shopName || "-"],
+          ["Komisi", commissionRate ? formatPercent(commissionRate) : "-"],
           ["Peluang", formatChance(item.chance ?? item.score)]
         ] : [
           ["Terjual", item.items_sold ?? item.soldCount],
@@ -772,7 +782,7 @@ function renderShopeeCard(item) {
           ["Peluang", formatChance(item.chance ?? item.score)]
         ])}
         <div class="button-row quick-actions">
-          ${renderOpenButton(shopeeUrl, amsProduct ? "Lihat Produk" : "Cari di Shopee")}
+          ${renderOpenButton(shopeeUrl, (amsProduct || realSearchProduct) ? "Lihat Produk" : "Cari di Shopee")}
           <button class="mini-action" type="button" data-copy-keyword="${escapeHtml(productName)}">Copy Keyword</button>
         </div>
       </div>
@@ -1547,8 +1557,9 @@ document.addEventListener("click", (event) => {
   if (!button) return;
   const source = button.dataset.source;
   if (!sectionState[source]) return;
+  const minVisible = source === "shopee" ? 8 : 3;
   sectionState[source].visible = button.dataset.action === "less"
-    ? 3
+    ? minVisible
     : Math.min(sectionState[source].visible + 3, sectionState[source].items.length);
   renderSourcePage(source);
 });
