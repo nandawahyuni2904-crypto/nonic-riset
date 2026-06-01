@@ -9,7 +9,8 @@ async function discoverShopeeProducts({
   negativeTerms = [],
   limit = 8,
   minRating = DEFAULT_MIN_RATING,
-  minReviews = DEFAULT_MIN_REVIEWS
+  minReviews = DEFAULT_MIN_REVIEWS,
+  disableFiltering = false
 } = {}) {
   const searchQuery = cleanText(query || terms[0] || "produk viral");
   const endpoint = buildSearchUrl(searchQuery, Math.max(20, limit * 3));
@@ -18,9 +19,16 @@ async function discoverShopeeProducts({
     source_used: "Shopee Search",
     endpoint,
     raw_count: 0,
+    raw_search_count: 0,
+    normalized_count: 0,
     filtered_count: 0,
     min_rating: minRating,
     min_reviews: minReviews,
+    filtering_disabled: Boolean(disableFiltering),
+    first_10_product_titles: [],
+    filter_reasons: [],
+    response_status: null,
+    content_type: "",
     error: null
   };
 
@@ -34,22 +42,43 @@ async function discoverShopeeProducts({
         "x-requested-with": "XMLHttpRequest"
       }
     }, 9000);
+    debug.response_status = response.status;
+    debug.content_type = response.headers.get("content-type") || "";
     const text = await response.text();
     const data = parseJson(text);
     if (!response.ok || !data) {
       debug.error = data?.message || data?.error || `Shopee Search HTTP ${response.status}`;
+      debug.body_preview = text.slice(0, 300);
       return { ok: false, items: [], rawItems: [], debug };
     }
 
     const rawItems = extractRawItems(data);
     debug.raw_count = rawItems.length;
+    debug.raw_search_count = rawItems.length;
     const normalized = rawItems.map(normalizeSearchItem).filter(Boolean);
+    debug.normalized_count = normalized.length;
+    debug.first_10_product_titles = normalized.slice(0, 10).map((item) => item.item_name || item.name || "");
     const ranked = rankAndFilterProducts(normalized, { terms, negativeTerms, minRating, minReviews });
+    debug.filter_reasons = ranked.slice(0, Math.max(20, limit)).map((item) => ({
+      title: item.item_name || item.name || "",
+      rating: item.rating || 0,
+      review_count: item.reviewCount || item.reviews || 0,
+      reason: item.filtered_reason || "would_pass_filter"
+    }));
     const strictItems = ranked.filter((item) => item.qualityPass);
-    const finalItems = (strictItems.length >= Math.min(limit, 4) ? strictItems : ranked).slice(0, limit);
+    const unfilteredItems = normalized.slice(0, limit).map((item, index) => ({
+      ...item,
+      score: item.score || Math.max(40, 90 - index * 2),
+      chance: item.chance || Math.max(40, 90 - index * 2),
+      label: index < 5 ? "HOT" : "GOOD",
+      filter_debug_note: "temporary_unfiltered_search_result"
+    }));
+    const finalItems = disableFiltering
+      ? unfilteredItems
+      : (strictItems.length >= Math.min(limit, 4) ? strictItems : ranked).slice(0, limit);
     debug.filtered_count = finalItems.length;
     debug.strict_count = strictItems.length;
-    debug.fallback_used = strictItems.length < Math.min(limit, 4);
+    debug.fallback_used = disableFiltering || strictItems.length < Math.min(limit, 4);
     debug.filtered_out_reason = ranked
       .filter((item) => !finalItems.includes(item))
       .slice(0, 8)
@@ -107,7 +136,7 @@ function normalizeSearchItem(raw) {
   const rating = roundRating(item.item_rating?.rating_star || item.rating_star || item.rating || 0);
   const reviewCount = extractReviewCount(item);
   const soldCount = Number(item.historical_sold || item.sold || item.monthly_sold || item.global_sold_count || 0) || 0;
-  if (!name || !price || !itemId) return null;
+  if (!name || !itemId) return null;
   const url = buildProductUrl(name, shopId, itemId);
   return {
     source: "Shopee Search",

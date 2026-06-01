@@ -6,7 +6,8 @@ const { discoverShopeeProducts } = require("../services/shopeeSearchDiscovery");
 
 const SHOPEE_MIN_RATING = 4.7;
 const SHOPEE_MIN_REVIEWS = 1000;
-const SHOPEE_PRODUCT_LIMIT = 8;
+const SHOPEE_PRODUCT_LIMIT = 20;
+const SHOPEE_SEARCH_FILTERING_DISABLED = true;
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -49,7 +50,8 @@ module.exports = async function handler(req, res) {
         negativeTerms: shopeeNegativeTerms,
         limit: SHOPEE_PRODUCT_LIMIT,
         minRating: SHOPEE_MIN_RATING,
-        minReviews: SHOPEE_MIN_REVIEWS
+        minReviews: SHOPEE_MIN_REVIEWS,
+        disableFiltering: SHOPEE_SEARCH_FILTERING_DISABLED
       })
     ]);
     if (amsResult.setCookies) res.setHeader("Set-Cookie", amsResult.setCookies);
@@ -63,6 +65,13 @@ module.exports = async function handler(req, res) {
     const opportunities = buildOpportunities(shorts, products);
     const shopeeStats = buildShopeeStats(products);
     const sourceUsed = resolveShopeeSourceUsed({ searchItems: searchResult.items || [], amsItems: shopeeFilter.items || [] });
+    const shopeeDebugPanel = buildShopeeDebugPanel({
+      category,
+      searchQuery: shopeeQuery,
+      sourceUsed,
+      searchDebug: searchResult.debug || {},
+      products
+    });
     const shopeeMessage = products.length
       ? "Shopee Ready."
       : (shopeeFilter.rawCount || searchResult.debug?.raw_count)
@@ -86,6 +95,7 @@ module.exports = async function handler(req, res) {
         shopee: shopeeStats
       },
       shopeeStats,
+      shopee_debug_panel: shopeeDebugPanel,
       shopeeStatus: {
         ready: Boolean(amsResult.ok),
         message: shopeeMessage,
@@ -115,6 +125,7 @@ module.exports = async function handler(req, res) {
           fallback_search_url: shopeeFilter.fallbackSearchUrl,
           terms: shopeeFilter.terms,
           search: searchResult.debug || {},
+          debug_panel: shopeeDebugPanel,
           amsRelevantCount: shopeeFilter.relevantCount,
           tokenSource: amsResult.tokenSource || "",
           shopId: amsResult.shopId || null,
@@ -391,6 +402,24 @@ function mergeShopeeDiscoveryProducts(searchItems, amsItems, query) {
   });
 
   return merged.sort((a, b) => Number(b.score || b.chance || 0) - Number(a.score || a.chance || 0));
+}
+
+function buildShopeeDebugPanel({ category, searchQuery, sourceUsed, searchDebug, products }) {
+  return {
+    category: category || "",
+    search_query: searchQuery,
+    source_used: sourceUsed,
+    raw_search_count: searchDebug.raw_search_count ?? searchDebug.raw_count ?? 0,
+    filtered_count: products.length,
+    first_10_product_titles: searchDebug.first_10_product_titles || products.slice(0, 10).map((item) => item.item_name || item.name || ""),
+    filter_reasons: searchDebug.filter_reasons || [],
+    min_rating: searchDebug.min_rating ?? SHOPEE_MIN_RATING,
+    min_reviews: searchDebug.min_reviews ?? SHOPEE_MIN_REVIEWS,
+    filtering_disabled: Boolean(searchDebug.filtering_disabled),
+    normalized_count: searchDebug.normalized_count || 0,
+    response_status: searchDebug.response_status || null,
+    error: searchDebug.error || null
+  };
 }
 
 function resolveShopeeSourceUsed({ searchItems, amsItems }) {
