@@ -86,6 +86,7 @@ const els = {
 let lastResearchData = null;
 let currentShorts = [];
 let currentShopeeStats = null;
+let currentShopeeDebugPanel = null;
 let loadingTimer = null;
 const THEME_KEY = "trendScopeTheme";
 const sectionState = {
@@ -422,6 +423,7 @@ function renderResearch(data) {
   const angles = data.topProductAngles || buildClientAngles(shorts);
   const stats = data.stats || data.debug?.youtube?.find((item) => item?.stats)?.stats || buildClientStats(shorts, recommendations);
   currentShopeeStats = data.shopeeStats || data.stats?.shopee || buildShopeeStats(products);
+  currentShopeeDebugPanel = data.shopee_debug_panel || data.debug?.shopee?.debug_panel || null;
   currentShorts = shorts;
   resetSectionPaging();
 
@@ -585,8 +587,73 @@ function renderSourcePage(source) {
   }
   if (source === "shopee") {
     els.shopeeCount.textContent = shopeeSectionCountText(items);
-    renderGrid(els.shopeeRows, items.length ? visibleItems.map((item) => renderShopeeCard(item)).join("") + controls : shopeePendingMessage(error));
+    const debugPanel = renderShopeeDebugPanel(currentShopeeDebugPanel);
+    const body = items.length ? visibleItems.map((item) => renderShopeeCard(item)).join("") + controls : shopeePendingMessage(error);
+    renderGrid(els.shopeeRows, debugPanel + body);
   }
+}
+
+function renderShopeeDebugPanel(panel) {
+  if (!panel) return "";
+  const titles = Array.isArray(panel.first_10_product_titles) ? panel.first_10_product_titles.filter(Boolean).slice(0, 10) : [];
+  const reasons = Array.isArray(panel.filter_reasons) ? panel.filter_reasons : [];
+  const summary = summarizeFilterReasons(reasons);
+  return `
+    <article class="shopee-debug-panel">
+      <div class="shopee-debug-head">
+        <div>
+          <span>Shopee Search Debug</span>
+          <h3>${escapeHtml(panel.search_query || "-")}</h3>
+        </div>
+        <strong>${escapeHtml(panel.source_used || "-")}</strong>
+      </div>
+      <dl class="shopee-debug-metrics">
+        <div><dt>Category</dt><dd>${escapeHtml(panel.category || "-")}</dd></div>
+        <div><dt>Search Query</dt><dd>${escapeHtml(panel.search_query || "-")}</dd></div>
+        <div><dt>Source Used</dt><dd>${escapeHtml(panel.source_used || "-")}</dd></div>
+        <div><dt>Raw Search Count</dt><dd>${formatNumber(panel.raw_search_count || 0)}</dd></div>
+        <div><dt>Filtered Count</dt><dd>${formatNumber(panel.filtered_count || 0)}</dd></div>
+        <div><dt>Response</dt><dd>${escapeHtml(panel.response_status || "-")}</dd></div>
+      </dl>
+      <div class="shopee-debug-columns">
+        <div>
+          <h4>First 10 Product Titles</h4>
+          ${titles.length ? `<ol>${titles.map((title) => `<li>${escapeHtml(title)}</li>`).join("")}</ol>` : `<p class="debug-empty">Belum ada title dari Shopee Search.</p>`}
+        </div>
+        <div>
+          <h4>Filter Reasons Summary</h4>
+          ${Object.keys(summary).length ? `<ul>${Object.entries(summary).map(([reason, count]) => `<li><span>${escapeHtml(reason)}</span><strong>${formatNumber(count)}</strong></li>`).join("")}</ul>` : `<p class="debug-empty">Tidak ada alasan filter.</p>`}
+        </div>
+      </div>
+      ${reasons.length ? `
+        <details class="shopee-debug-details">
+          <summary>Detail produk terfilter (${formatNumber(reasons.length)})</summary>
+          <div>
+            ${reasons.slice(0, 20).map((item) => `
+              <p>
+                <strong>${escapeHtml(item.title || "-")}</strong>
+                <span>rating ${escapeHtml(item.rating || 0)} | reviews ${formatNumber(item.review_count || 0)} | ${escapeHtml(item.reason || "-")}</span>
+              </p>
+            `).join("")}
+          </div>
+        </details>
+      ` : ""}
+      ${panel.error ? `<p class="shopee-debug-error">${escapeHtml(panel.error)}</p>` : ""}
+    </article>
+  `;
+}
+
+function summarizeFilterReasons(reasons = []) {
+  return reasons.reduce((acc, item) => {
+    const raw = String(item.reason || "unknown");
+    const key = raw.includes("rating_below") ? "rating<4.7"
+      : raw.includes("reviews_or_sold_below") ? "reviews<1000"
+        : raw.includes("no_keyword") ? "keyword mismatch"
+          : raw.includes("rejected_negative") ? "negative category match"
+            : raw || "unknown";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 }
 
 function shopeeSectionCountText(items = []) {
@@ -662,6 +729,7 @@ function renderProductResearch(data) {
   const shopeeItems = extractShopeeItems(data);
   const opportunities = data.opportunities || [];
   currentShopeeStats = data.shopeeStats || data.stats?.shopee || buildShopeeStats(shopeeItems);
+  currentShopeeDebugPanel = data.shopee_debug_panel || data.debug?.shopee?.debug_panel || null;
   const errors = formatSourceErrors([
     ...(Array.isArray(data.errors) ? data.errors : []),
     data.errors?.youtube && `YouTube gagal: ${data.errors.youtube}`,

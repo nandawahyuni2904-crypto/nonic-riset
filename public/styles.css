@@ -6655,9 +6655,169 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.16);
 }
 
+.shopee-debug-panel {
+  grid-column: 1 / -1;
+  padding: 14px;
+  color: #dbeafe;
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(20, 184, 166, 0.08)),
+    rgba(8, 13, 28, 0.86);
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
+}
+
+.shopee-debug-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.shopee-debug-head span {
+  display: block;
+  margin-bottom: 3px;
+  color: #67e8f9;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shopee-debug-head h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 16px;
+}
+
+.shopee-debug-head strong {
+  padding: 6px 10px;
+  color: #ccfbf1;
+  background: rgba(20, 184, 166, 0.14);
+  border: 1px solid rgba(45, 212, 191, 0.22);
+  border-radius: 999px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.shopee-debug-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.shopee-debug-metrics div {
+  min-width: 0;
+  padding: 9px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+}
+
+.shopee-debug-metrics dt {
+  color: #8ea4c9;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.shopee-debug-metrics dd {
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shopee-debug-columns {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 10px;
+}
+
+.shopee-debug-columns > div,
+.shopee-debug-details {
+  min-width: 0;
+  padding: 10px;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+}
+
+.shopee-debug-columns h4 {
+  margin: 0 0 8px;
+  color: #e0f2fe;
+  font-size: 12px;
+}
+
+.shopee-debug-columns ol,
+.shopee-debug-columns ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.shopee-debug-columns li,
+.shopee-debug-details p {
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.shopee-debug-columns ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+.shopee-debug-columns ul li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.shopee-debug-details {
+  margin-top: 10px;
+}
+
+.shopee-debug-details summary {
+  color: #67e8f9;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.shopee-debug-details p {
+  display: grid;
+  gap: 3px;
+  margin: 8px 0 0;
+}
+
+.shopee-debug-details span,
+.debug-empty {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.shopee-debug-error {
+  margin: 10px 0 0;
+  color: #fecaca;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 @media (max-width: 900px) {
   .result-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shopee-debug-metrics,
+  .shopee-debug-columns {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -6665,6 +6825,16 @@ body {
   .result-grid,
   .search-hero,
   .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shopee-debug-head,
+  .shopee-debug-columns {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .shopee-debug-metrics {
     grid-template-columns: 1fr;
   }
 }
