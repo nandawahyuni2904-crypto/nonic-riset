@@ -611,6 +611,10 @@ function renderShopeeDebugPanel(panel) {
         <div><dt>Category</dt><dd>${escapeHtml(panel.category || "-")}</dd></div>
         <div><dt>Search Query</dt><dd>${escapeHtml(panel.search_query || "-")}</dd></div>
         <div><dt>Source Used</dt><dd>${escapeHtml(panel.source_used || "-")}</dd></div>
+        <div><dt>Environment</dt><dd>${escapeHtml(panel.environment || "-")}</dd></div>
+        <div><dt>Partner ID</dt><dd>${escapeHtml(panel.partner_id || "-")}</dd></div>
+        <div><dt>Base URL</dt><dd>${escapeHtml(panel.base_url || "-")}</dd></div>
+        <div><dt>Request Path</dt><dd>${escapeHtml(panel.request_path || "-")}</dd></div>
         <div><dt>Raw Search Count</dt><dd>${formatNumber(panel.raw_search_count || 0)}</dd></div>
         <div><dt>Filtered Count</dt><dd>${formatNumber(panel.filtered_count || 0)}</dd></div>
         <div><dt>Response</dt><dd>${escapeHtml(panel.response_status || "-")}</dd></div>
@@ -639,6 +643,11 @@ function renderShopeeDebugPanel(panel) {
         </details>
       ` : ""}
       ${panel.error ? `<p class="shopee-debug-error">${escapeHtml(panel.error)}</p>` : ""}
+      <details class="shopee-debug-details shopee-debug-raw" open>
+        <summary>Full Shopee Response Body</summary>
+        <p><strong>Endpoint</strong><span>${escapeHtml(panel.request_endpoint || "-")}</span></p>
+        <pre>${escapeHtml(panel.full_response_body || "Response body kosong atau tidak diteruskan.")}</pre>
+      </details>
     </article>
   `;
 }

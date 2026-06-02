@@ -1,4 +1,6 @@
-const SHOPEE_SEARCH_BASE = "https://shopee.co.id/api/v4/search/search_items";
+const SHOPEE_SEARCH_BASE_URL = "https://shopee.co.id";
+const SHOPEE_SEARCH_PATH = "/api/v4/search/search_items";
+const SHOPEE_SEARCH_BASE = `${SHOPEE_SEARCH_BASE_URL}${SHOPEE_SEARCH_PATH}`;
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36";
 const DEFAULT_MIN_RATING = 4.7;
 const DEFAULT_MIN_REVIEWS = 1000;
@@ -18,6 +20,11 @@ async function discoverShopeeProducts({
     shopee_query: searchQuery,
     source_used: "Shopee Search",
     endpoint,
+    request_endpoint: endpoint,
+    request_path: SHOPEE_SEARCH_PATH,
+    base_url: SHOPEE_SEARCH_BASE_URL,
+    environment: String(process.env.SHOPEE_ENV || "public-search").trim() || "public-search",
+    partner_id: String(process.env.SHOPEE_PARTNER_ID || "").trim() || null,
     raw_count: 0,
     raw_search_count: 0,
     normalized_count: 0,
@@ -29,6 +36,7 @@ async function discoverShopeeProducts({
     filter_reasons: [],
     response_status: null,
     content_type: "",
+    full_response_body: "",
     error: null
   };
 
@@ -45,6 +53,7 @@ async function discoverShopeeProducts({
     debug.response_status = response.status;
     debug.content_type = response.headers.get("content-type") || "";
     const text = await response.text();
+    debug.full_response_body = text;
     const data = parseJson(text);
     if (!response.ok || !data) {
       debug.error = data?.message || data?.error || `Shopee Search HTTP ${response.status}`;
