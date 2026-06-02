@@ -8,6 +8,7 @@ const SHOPEE_MIN_RATING = 4.7;
 const SHOPEE_MIN_REVIEWS = 1000;
 const SHOPEE_PRODUCT_LIMIT = 20;
 const SHOPEE_SEARCH_FILTERING_DISABLED = true;
+const AMS_PRIMARY_PAGE_SIZE = 50;
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -40,7 +41,7 @@ module.exports = async function handler(req, res) {
     const [amsResult, searchResult] = await Promise.all([
       getAmsProductsFromRequest(req, {
         page_no: 1,
-        page_size: 10,
+        page_size: AMS_PRIMARY_PAGE_SIZE,
         query: shopeeQuery,
         category: mode === "category" ? category : ""
       }),
@@ -55,16 +56,30 @@ module.exports = async function handler(req, res) {
       })
     ]);
     if (amsResult.setCookies) res.setHeader("Set-Cookie", amsResult.setCookies);
-    const shopeeFilter = filterProductsByResearch(amsResult.items || [], {
+    const amsRanking = rankAmsProductsForResearch(amsResult.items || [], {
       mode,
       keyword,
       category,
-      resolvedKeyword
+      resolvedKeyword,
+      terms: shopeeTerms,
+      negativeTerms: shopeeNegativeTerms,
+      query: shopeeQuery
     });
-    const products = mergeShopeeDiscoveryProducts(searchResult.items || [], shopeeFilter.items, shopeeQuery).slice(0, SHOPEE_PRODUCT_LIMIT);
+    const searchFailed = Boolean(searchResult.debug?.response_status && Number(searchResult.debug.response_status) >= 400) || Boolean(searchResult.debug?.error);
+    const products = pickShopeeProducts({
+      amsItems: amsRanking.items,
+      fallbackAmsItems: amsRanking.fallbackItems,
+      searchItems: searchResult.items || [],
+      query: shopeeQuery,
+      searchFailed
+    }).slice(0, SHOPEE_PRODUCT_LIMIT);
     const opportunities = buildOpportunities(shorts, products);
     const shopeeStats = buildShopeeStats(products);
-    const sourceUsed = resolveShopeeSourceUsed({ searchItems: searchResult.items || [], amsItems: shopeeFilter.items || [] });
+    const sourceUsed = resolveShopeeSourceUsed({
+      searchItems: products.filter((item) => String(item.source || "").includes("Shopee Search")),
+      amsItems: products.filter((item) => String(item.source || "").includes("AMS")),
+      searchFailed
+    });
     const shopeeDebugPanel = buildShopeeDebugPanel({
       category,
       searchQuery: shopeeQuery,
@@ -74,7 +89,7 @@ module.exports = async function handler(req, res) {
     });
     const shopeeMessage = products.length
       ? "Shopee Ready."
-      : (shopeeFilter.rawCount || searchResult.debug?.raw_count)
+      : (amsRanking.rawCount || searchResult.debug?.raw_count)
         ? "Tidak ada produk Shopee relevan untuk kategori ini"
         : amsResult.message || amsResult.error || "Shopee belum mengambil data trends.";
 
@@ -104,7 +119,7 @@ module.exports = async function handler(req, res) {
         rawItemCount: (searchResult.debug?.raw_count || 0) + (amsResult.rawItemCount || 0),
         mappedItemCount: (searchResult.rawItems?.length || 0) + (amsResult.mappedItemCount || 0),
         relevantItemCount: products.length,
-        fallbackSearchUrl: shopeeFilter.fallbackSearchUrl,
+        fallbackSearchUrl: amsRanking.fallbackSearchUrl,
         sourceUsed,
         minRating: SHOPEE_MIN_RATING,
         minReviews: SHOPEE_MIN_REVIEWS
@@ -115,18 +130,19 @@ module.exports = async function handler(req, res) {
           ok: Boolean(amsResult.ok),
           shopee_query: shopeeQuery,
           source_used: sourceUsed,
-          raw_count: (searchResult.debug?.raw_count || 0) + shopeeFilter.rawCount,
+          raw_count: (searchResult.debug?.raw_count || 0) + amsRanking.rawCount,
           filtered_count: products.length,
           min_rating: SHOPEE_MIN_RATING,
           min_reviews: SHOPEE_MIN_REVIEWS,
-          shopee_raw_count: (searchResult.debug?.raw_count || 0) + shopeeFilter.rawCount,
+          shopee_raw_count: (searchResult.debug?.raw_count || 0) + amsRanking.rawCount,
           shopee_relevant_count: products.length,
-          filtered_out_reason: shopeeFilter.filteredOutReason,
-          fallback_search_url: shopeeFilter.fallbackSearchUrl,
-          terms: shopeeFilter.terms,
+          filtered_out_reason: amsRanking.filteredOutReason,
+          fallback_search_url: amsRanking.fallbackSearchUrl,
+          terms: amsRanking.terms,
           search: searchResult.debug || {},
+          amsRanking: amsRanking.debug,
           debug_panel: shopeeDebugPanel,
-          amsRelevantCount: shopeeFilter.relevantCount,
+          amsRelevantCount: amsRanking.relevantCount,
           tokenSource: amsResult.tokenSource || "",
           shopId: amsResult.shopId || null,
           rawItemCount: amsResult.rawItemCount || 0,
@@ -365,6 +381,113 @@ function filterProductsByResearch(products, context = {}) {
   };
 }
 
+function rankAmsProductsForResearch(products, context = {}) {
+  const query = context.query || buildShopeeQuery(context);
+  const terms = (context.terms && context.terms.length ? context.terms : buildShopeeTerms(context)).filter(Boolean);
+  const negativeTerms = context.negativeTerms || buildNegativeTerms(context.category);
+  const fallbackSearchUrl = `https://shopee.co.id/search?keyword=${encodeURIComponent(query)}`;
+  const ranked = (products || []).map((product, index) => {
+    const title = product.item_name || product.name || "";
+    const text = normalizeForMatch(`${title} ${product.shop_name || ""} ${product.shopName || ""}`);
+    const positiveMatches = terms.filter((term) => text.includes(normalizeForMatch(term)));
+    const negativeMatches = negativeTerms.filter((term) => text.includes(normalizeForMatch(term)));
+    const commissionRate = Number(product.commission_rate || product.commissionRate || 0);
+    const titleRelevance = Math.min(30, positiveMatches.length * 12);
+    const categoryRelevance = scoreCategoryRelevance({ category: context.category, text, positiveMatches });
+    const commissionScore = scoreCommissionRate(commissionRate);
+    const campaignScore = scoreCampaignStatus(product.campaign_status || product.campaignStatus || "");
+    const confidenceScore = Math.max(0, Math.min(100, Math.round(
+      commissionScore
+      + campaignScore
+      + titleRelevance
+      + categoryRelevance
+      + Math.max(0, 8 - index * 0.25)
+      - (negativeMatches.length ? 45 : 0)
+    )));
+    const relevant = negativeMatches.length === 0 && (positiveMatches.length > 0 || confidenceScore >= 45);
+    return {
+      ...product,
+      source: "AMS",
+      validationStatus: "shopee-ams-production",
+      matched_query: query,
+      matched_terms: positiveMatches,
+      relevance_reason: positiveMatches.length ? `matched:${positiveMatches.slice(0, 3).join("|")}` : "commission_campaign_rank",
+      confidence_score: confidenceScore,
+      score: confidenceScore,
+      chance: confidenceScore,
+      label: confidenceScore >= 80 ? "HOT" : confidenceScore >= 60 ? "GOOD" : "LOW",
+      fallback_search_url: product.fallback_search_url || fallbackSearchUrl,
+      filtered_reason: negativeMatches.length
+        ? `rejected_negative:${negativeMatches.slice(0, 3).join("|")}`
+        : relevant
+          ? ""
+          : "low_relevance_score"
+    };
+  }).sort((a, b) => Number(b.confidence_score || 0) - Number(a.confidence_score || 0));
+
+  const items = ranked.filter((item) => !item.filtered_reason).slice(0, SHOPEE_PRODUCT_LIMIT);
+  const fallbackItems = ranked.filter((item) => !String(item.filtered_reason || "").startsWith("rejected_negative")).slice(0, Math.min(8, SHOPEE_PRODUCT_LIMIT));
+  return {
+    items,
+    fallbackItems,
+    query,
+    terms,
+    rawCount: products.length,
+    relevantCount: items.length,
+    fallbackSearchUrl,
+    filteredOutReason: ranked.filter((item) => item.filtered_reason).slice(0, 20).map((item) => ({
+      item_id: item.item_id || "",
+      item_name: item.item_name || item.name || "",
+      confidence_score: item.confidence_score || 0,
+      reason: item.filtered_reason
+    })),
+    debug: {
+      raw_count: products.length,
+      relevant_count: items.length,
+      fallback_count: fallbackItems.length,
+      first_10_ams_titles: ranked.slice(0, 10).map((item) => item.item_name || item.name || ""),
+      ranking: ranked.slice(0, 10).map((item) => ({
+        item_id: item.item_id || "",
+        title: item.item_name || item.name || "",
+        commission_rate: item.commission_rate || 0,
+        campaign_status: item.campaign_status || item.campaignStatus || "",
+        confidence_score: item.confidence_score || 0,
+        reason: item.filtered_reason || item.relevance_reason || "ranked"
+      }))
+    }
+  };
+}
+
+function pickShopeeProducts({ amsItems, fallbackAmsItems = [], searchItems, query, searchFailed }) {
+  if (amsItems.length) return mergeShopeeDiscoveryProducts([], amsItems, query);
+  if (searchFailed && fallbackAmsItems.length) return mergeShopeeDiscoveryProducts([], fallbackAmsItems, query);
+  if (searchFailed) return [];
+  return mergeShopeeDiscoveryProducts(searchItems, [], query);
+}
+
+function scoreCommissionRate(value) {
+  const number = Number(value || 0);
+  if (!number) return 0;
+  if (number <= 1) return Math.min(35, number * 100);
+  return Math.min(35, number * 1.4);
+}
+
+function scoreCampaignStatus(value) {
+  const text = normalizeForMatch(value);
+  if (!text) return 8;
+  if (/active|ongoing|approved|added|live|running|valid|enable|open|aktif|berjalan/.test(text)) return 18;
+  if (/pending|review|waiting/.test(text)) return 10;
+  if (/inactive|closed|disabled|rejected|expired|pause|stop/.test(text)) return 0;
+  return 8;
+}
+
+function scoreCategoryRelevance({ category, text, positiveMatches }) {
+  if (!category) return positiveMatches.length ? 12 : 0;
+  const categoryTerms = expandShopeeTerm(category).map(normalizeForMatch).filter((term) => term.length > 2 && !GENERIC_MATCH_TERMS.has(term));
+  const matches = categoryTerms.filter((term) => text.includes(term));
+  return Math.min(22, matches.length * 10);
+}
+
 function mergeShopeeDiscoveryProducts(searchItems, amsItems, query) {
   const amsByItemId = new Map((amsItems || []).filter((item) => item.item_id).map((item) => [String(item.item_id), item]));
   const amsByName = new Map((amsItems || []).map((item) => [normalizeForMatch(item.item_name || item.name), item]).filter(([key]) => key));
@@ -428,10 +551,11 @@ function buildShopeeDebugPanel({ category, searchQuery, sourceUsed, searchDebug,
   };
 }
 
-function resolveShopeeSourceUsed({ searchItems, amsItems }) {
-  if (searchItems.length && amsItems.length) return "Shopee Search + AMS";
-  if (searchItems.length) return "Shopee Search";
+function resolveShopeeSourceUsed({ searchItems, amsItems, searchFailed }) {
+  if (amsItems.length && searchFailed) return "AMS (Search 403 fallback)";
+  if (amsItems.length && searchItems.length) return "AMS + Shopee Search";
   if (amsItems.length) return "AMS";
+  if (searchItems.length) return "Shopee Search";
   return "none";
 }
 
