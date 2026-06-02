@@ -99,8 +99,11 @@ async function getAmsProductsFromRequest(req, options = {}) {
     return {
       ok: true,
       items,
+      endpointUsed: AMS_PATH,
+      requestParams: params,
       rawItemCount: rawItems.length,
       mappedItemCount: items.length,
+      allProductsDebug: items.slice(0, 50).map(toAmsProductDebug),
       tokenSource: tokenInfo.source,
       shopId: tokenInfo.shopId,
       shopeeQuery: query,
@@ -229,6 +232,7 @@ function extractItems(data) {
 function normalizeAmsProduct(item, index) {
   const itemId = item.item_id || item.itemid || item.product_id || item.productid;
   const shopId = item.shop_id || item.shopid || item.seller_id || item.sellerid;
+  const categoryId = item.category_id || item.categoryid || item.catid || item.cat_id || item.category?.category_id || item.category?.id || "";
   const name = cleanText(item.item_name || item.name || item.product_name || item.title);
   if (!itemId && !name) return null;
   const commissionRate = toNumber(item.commission_rate || item.commission_ratio || item.rate || item.commission);
@@ -248,6 +252,8 @@ function normalizeAmsProduct(item, index) {
     source: "shopee-ams-production",
     item_id: itemId,
     shop_id: shopId || "",
+    category_id: categoryId,
+    categoryId,
     item_name: name,
     name,
     commission_rate: commissionRate,
@@ -275,6 +281,16 @@ function normalizeAmsProduct(item, index) {
     chance: score,
     label: score >= 80 ? "HOT" : score >= 60 ? "GOOD" : "LOW",
     validationStatus: "shopee-ams-production"
+  };
+}
+
+function toAmsProductDebug(item) {
+  return {
+    item_id: item.item_id || "",
+    item_name: item.item_name || item.name || "",
+    commission_rate: item.commission_rate || 0,
+    campaign_status: item.campaign_status || item.campaignStatus || "",
+    category_id: item.category_id || item.categoryId || ""
   };
 }
 

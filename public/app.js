@@ -613,6 +613,7 @@ function renderShopeeDebugPanel(panel) {
         <div><dt>Source Used</dt><dd>${escapeHtml(panel.source_used || "-")}</dd></div>
         <div><dt>Final Source</dt><dd>${escapeHtml(panel.final_source_used || "-")}</dd></div>
         <div><dt>Fallback</dt><dd>${panel.fallback_triggered ? "yes" : "no"}</dd></div>
+        <div><dt>AMS Total Returned</dt><dd>${formatNumber(panel.ams_total_returned || 0)}</dd></div>
         <div><dt>AMS Candidates</dt><dd>${formatNumber(panel.ams_candidate_count || 0)}</dd></div>
         <div><dt>AMS Raw</dt><dd>${formatNumber(panel.ams_raw_count || 0)}</dd></div>
         <div><dt>AMS After Filter</dt><dd>${formatNumber(panel.ams_after_filter_count || 0)}</dd></div>
@@ -662,10 +663,19 @@ function renderAmsFilterDebug(panel) {
   const reasons = Array.isArray(panel.ams_filter_reasons) ? panel.ams_filter_reasons : [];
   const titles = Array.isArray(panel.ams_first_10_titles) ? panel.ams_first_10_titles.filter(Boolean).slice(0, 10) : [];
   const ranking = Array.isArray(panel.ams_ranking) ? panel.ams_ranking.slice(0, 10) : [];
-  if (!reasons.length && !titles.length && !ranking.length) return "";
+  const allProducts = Array.isArray(panel.ams_all_products) ? panel.ams_all_products.slice(0, 50) : [];
+  if (!reasons.length && !titles.length && !ranking.length && !allProducts.length && !panel.ams_endpoint) return "";
   return `
     <details class="shopee-debug-details" open>
       <summary>AMS Ranking & Filter Debug</summary>
+      ${panel.ams_endpoint ? `<p><strong>Endpoint</strong><span>${escapeHtml(panel.ams_endpoint)}</span></p>` : ""}
+      ${panel.ams_request_params ? `<p><strong>Request Params</strong><span>${escapeHtml(JSON.stringify(panel.ams_request_params))}</span></p>` : ""}
+      ${allProducts.length ? `<div class="ams-debug-list"><strong>All AMS Products Before Filter (${formatNumber(allProducts.length)})</strong>${allProducts.map((item, index) => `
+        <p>
+          <strong>${formatNumber(index + 1)}. ${escapeHtml(item.item_name || "-")}</strong>
+          <span>item ${escapeHtml(item.item_id || "-")} | commission ${escapeHtml(item.commission_rate || 0)} | status ${escapeHtml(item.campaign_status || "-")} | category ${escapeHtml(item.category_id || "-")}</span>
+        </p>
+      `).join("")}</div>` : ""}
       ${titles.length ? `<div class="ams-debug-list"><strong>First 10 AMS Titles</strong><ol>${titles.map((title) => `<li>${escapeHtml(title)}</li>`).join("")}</ol></div>` : ""}
       ${ranking.length ? `<div class="ams-debug-list"><strong>Top AMS Ranking</strong>${ranking.map((item) => `
         <p>
