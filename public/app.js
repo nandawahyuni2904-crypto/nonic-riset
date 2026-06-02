@@ -621,6 +621,9 @@ function renderShopeeDebugPanel(panel) {
         <div><dt>Partner ID</dt><dd>${escapeHtml(panel.partner_id || "-")}</dd></div>
         <div><dt>Base URL</dt><dd>${escapeHtml(panel.base_url || "-")}</dd></div>
         <div><dt>Request Path</dt><dd>${escapeHtml(panel.request_path || "-")}</dd></div>
+        <div><dt>Method</dt><dd>${escapeHtml(panel.method_used || "-")}</dd></div>
+        <div><dt>Cookie</dt><dd>${panel.cookie_configured ? "configured" : "not set"}</dd></div>
+        <div><dt>Bootstrap Cookie</dt><dd>${formatNumber(panel.bootstrap_cookie_count || 0)}</dd></div>
         <div><dt>Raw Search Count</dt><dd>${formatNumber(panel.raw_search_count || 0)}</dd></div>
         <div><dt>Filtered Count</dt><dd>${formatNumber(panel.filtered_count || 0)}</dd></div>
         <div><dt>Response</dt><dd>${escapeHtml(panel.response_status || "-")}</dd></div>
@@ -650,6 +653,7 @@ function renderShopeeDebugPanel(panel) {
       ` : ""}
       ${renderAmsFilterDebug(panel)}
       ${renderAffiliateEndpointDebug(panel)}
+      ${panel.discovery_error_message ? `<p class="shopee-debug-error">${escapeHtml(panel.discovery_error_message)}</p>` : ""}
       ${panel.error ? `<p class="shopee-debug-error">${escapeHtml(panel.error)}</p>` : ""}
       <details class="shopee-debug-details shopee-debug-raw" open>
         <summary>Full Shopee Response Body</summary>
@@ -753,7 +757,7 @@ function shopeeSectionCountText(items = []) {
 }
 
 function shopeePendingMessage(error) {
-  return emptyMessage(error || "Shopee Ready, belum ada produk AMS yang cocok.", "Coba keyword lain atau cek periode performance AMS di Seller Centre.");
+  return emptyMessage(error || "Shopee product discovery belum tersedia, hanya AMS campaign tersedia.", "Shopee Trends hanya menampilkan produk dengan direct product URL. Cek panel debug untuk status endpoint product discovery.");
 }
 
 function renderGrid(target, html) {

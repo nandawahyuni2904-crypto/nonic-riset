@@ -4,6 +4,7 @@ const SHOPEE_SEARCH_BASE = `${SHOPEE_SEARCH_BASE_URL}${SHOPEE_SEARCH_PATH}`;
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36";
 const DEFAULT_MIN_RATING = 4.7;
 const DEFAULT_MIN_REVIEWS = 1000;
+const PRODUCT_DISCOVERY_UNAVAILABLE = "Shopee product discovery belum tersedia, hanya AMS campaign tersedia.";
 
 async function discoverShopeeProducts({
   query,
@@ -16,6 +17,8 @@ async function discoverShopeeProducts({
 } = {}) {
   const searchQuery = cleanText(query || terms[0] || "produk viral");
   const endpoint = buildSearchUrl(searchQuery, Math.max(20, limit * 3));
+  const referer = `https://shopee.co.id/search?keyword=${encodeURIComponent(searchQuery)}`;
+  const cookie = String(process.env.SHOPEE_SEARCH_COOKIE || process.env.SHOPEE_COOKIE || "").trim();
   const debug = {
     shopee_query: searchQuery,
     source_used: "Shopee Search",
@@ -37,19 +40,15 @@ async function discoverShopeeProducts({
     response_status: null,
     content_type: "",
     full_response_body: "",
+    method_used: "direct_search_api",
+    cookie_configured: Boolean(cookie),
+    bootstrap_cookie_count: 0,
+    discovery_error_message: "",
     error: null
   };
 
   try {
-    const response = await fetchWithTimeout(endpoint, {
-      headers: {
-        accept: "application/json",
-        "accept-language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-        referer: `https://shopee.co.id/search?keyword=${encodeURIComponent(searchQuery)}`,
-        "user-agent": USER_AGENT,
-        "x-requested-with": "XMLHttpRequest"
-      }
-    }, 9000);
+    const response = await fetchSearchApi({ endpoint, referer, cookie, debug });
     debug.response_status = response.status;
     debug.content_type = response.headers.get("content-type") || "";
     const text = await response.text();
@@ -96,11 +95,73 @@ async function discoverShopeeProducts({
         item_name: item.item_name || item.name || "",
         reason: item.filtered_reason || "ranked_lower"
       }));
+    if (!finalItems.length) {
+      debug.error = PRODUCT_DISCOVERY_UNAVAILABLE;
+      debug.discovery_error_message = PRODUCT_DISCOVERY_UNAVAILABLE;
+      return { ok: false, items: [], rawItems: normalized, debug };
+    }
     return { ok: true, items: finalItems, rawItems: normalized, debug };
   } catch (error) {
     debug.error = error.name === "AbortError" ? "Shopee Search timeout" : error.message;
+    debug.discovery_error_message = PRODUCT_DISCOVERY_UNAVAILABLE;
     return { ok: false, items: [], rawItems: [], debug };
   }
+}
+
+async function fetchSearchApi({ endpoint, referer, cookie, debug }) {
+  const directResponse = await fetchWithTimeout(endpoint, {
+    headers: buildSearchHeaders({ referer, cookie })
+  }, 12000);
+  if (directResponse.ok || directResponse.status !== 403) return directResponse;
+
+  debug.method_used = "bootstrap_cookie_then_search_api";
+  const bootstrap = await fetchWithTimeout(referer, {
+    headers: buildPageHeaders({ referer, cookie })
+  }, 12000);
+  const bootstrapCookie = collectSetCookie(bootstrap.headers);
+  debug.bootstrap_cookie_count = bootstrapCookie ? bootstrapCookie.split(";").filter(Boolean).length : 0;
+  const mergedCookie = [cookie, bootstrapCookie].filter(Boolean).join("; ");
+  if (!mergedCookie) return directResponse;
+
+  const retryResponse = await fetchWithTimeout(endpoint, {
+    headers: buildSearchHeaders({ referer, cookie: mergedCookie })
+  }, 12000);
+  debug.method_used = retryResponse.ok ? "bootstrap_cookie_retry_success" : "bootstrap_cookie_retry_failed";
+  return retryResponse;
+}
+
+function buildSearchHeaders({ referer, cookie }) {
+  return {
+    accept: "application/json",
+    "accept-language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    referer,
+    origin: SHOPEE_SEARCH_BASE_URL,
+    "user-agent": USER_AGENT,
+    "x-api-source": "pc",
+    "x-requested-with": "XMLHttpRequest",
+    ...(cookie ? { cookie } : {})
+  };
+}
+
+function buildPageHeaders({ referer, cookie }) {
+  return {
+    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "accept-language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    referer,
+    "user-agent": USER_AGENT,
+    ...(cookie ? { cookie } : {})
+  };
+}
+
+function collectSetCookie(headers) {
+  const values = [];
+  if (typeof headers.getSetCookie === "function") values.push(...headers.getSetCookie());
+  const single = headers.get("set-cookie");
+  if (single) values.push(single);
+  return values
+    .map((value) => String(value).split(";")[0])
+    .filter(Boolean)
+    .join("; ");
 }
 
 function buildSearchUrl(keyword, limit) {
@@ -145,8 +206,9 @@ function normalizeSearchItem(raw) {
   const rating = roundRating(item.item_rating?.rating_star || item.rating_star || item.rating || 0);
   const reviewCount = extractReviewCount(item);
   const soldCount = Number(item.historical_sold || item.sold || item.monthly_sold || item.global_sold_count || 0) || 0;
-  if (!name || !itemId) return null;
+  if (!name || !itemId || !shopId) return null;
   const url = buildProductUrl(name, shopId, itemId);
+  if (!isDirectProductUrl(url)) return null;
   return {
     source: "Shopee Search",
     validationStatus: "shopee-search-product",
@@ -235,13 +297,16 @@ function formatShopeeImage(value) {
 }
 
 function buildProductUrl(name, shopId, itemId) {
-  if (!shopId || !itemId) return `https://shopee.co.id/search?keyword=${encodeURIComponent(name || itemId || "")}`;
   const slug = String(name || "produk-shopee")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 120) || "produk-shopee";
   return `https://shopee.co.id/${slug}-i.${shopId}.${itemId}`;
+}
+
+function isDirectProductUrl(url) {
+  return /-i\.\d+\.\d+/.test(String(url || ""));
 }
 
 function roundRating(value) {
@@ -275,5 +340,6 @@ function parseJson(value) {
 }
 
 module.exports = {
-  discoverShopeeProducts
+  discoverShopeeProducts,
+  PRODUCT_DISCOVERY_UNAVAILABLE
 };

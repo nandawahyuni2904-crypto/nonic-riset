@@ -127,11 +127,13 @@ async function callAffiliateGraphql({ appId, secret, graphqlUrl, candidate }) {
 }
 
 function normalizeAffiliateProduct(item, candidate, index) {
+  if (candidate.graphqlField !== "productOfferV2") return null;
   const name = cleanText(item.productName || item.offerName || item.shopName || item.name || "");
   if (!name) return null;
   const commissionRate = toNumber(item.commissionRate || item.commission_rate || item.rate || 0);
   const price = item.price || item.priceMax || "";
   const url = item.productLink || item.offerLink || "";
+  if (!url || /\/search\?keyword=/i.test(url)) return null;
   const score = Math.max(30, Math.min(100, Math.round((commissionRate <= 1 ? commissionRate * 100 : commissionRate) + Math.max(0, 20 - index))));
   return {
     source: "Shopee Affiliate Open API",
