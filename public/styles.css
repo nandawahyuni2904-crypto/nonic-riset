@@ -6815,6 +6815,16 @@ body {
   padding-left: 18px;
 }
 
+.affiliate-debug-list article {
+  padding: 10px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.affiliate-debug-list li span {
+  display: block;
+  margin-top: 2px;
+}
+
 .shopee-debug-details span,
 .debug-empty {
   color: #94a3b8;

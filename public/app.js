@@ -649,6 +649,7 @@ function renderShopeeDebugPanel(panel) {
         </details>
       ` : ""}
       ${renderAmsFilterDebug(panel)}
+      ${renderAffiliateEndpointDebug(panel)}
       ${panel.error ? `<p class="shopee-debug-error">${escapeHtml(panel.error)}</p>` : ""}
       <details class="shopee-debug-details shopee-debug-raw" open>
         <summary>Full Shopee Response Body</summary>
@@ -656,6 +657,43 @@ function renderShopeeDebugPanel(panel) {
         <pre>${escapeHtml(panel.full_response_body || "Response body kosong atau tidak diteruskan.")}</pre>
       </details>
     </article>
+  `;
+}
+
+function renderAffiliateEndpointDebug(panel) {
+  const candidates = Array.isArray(panel.affiliate_endpoint_candidates) ? panel.affiliate_endpoint_candidates : [];
+  if (!candidates.length && !panel.affiliate_source) return "";
+  return `
+    <details class="shopee-debug-details" open>
+      <summary>Shopee Affiliate Endpoint Discovery</summary>
+      <p><strong>Source</strong><span>${escapeHtml(panel.affiliate_source || "shopee-affiliate-open-api")}</span></p>
+      <p><strong>Configured</strong><span>${panel.affiliate_configured ? "yes" : "no"}</span></p>
+      <p><strong>Total Products</strong><span>${formatNumber(panel.affiliate_product_count || 0)}</span></p>
+      ${panel.affiliate_message ? `<p><strong>Message</strong><span>${escapeHtml(panel.affiliate_message)}</span></p>` : ""}
+      ${candidates.length ? `<div class="ams-debug-list affiliate-debug-list">
+        <strong>Endpoint Candidates</strong>
+        ${candidates.map((candidate) => {
+          const samples = Array.isArray(candidate.first_20_products || candidate.sample_products)
+            ? (candidate.first_20_products || candidate.sample_products).slice(0, 20)
+            : [];
+          return `
+            <article>
+              <p>
+                <strong>${escapeHtml(candidate.name || "-")}</strong>
+                <span>${escapeHtml(candidate.graphql_field || "-")} | ${escapeHtml(candidate.endpoint || "-")} | status ${escapeHtml(candidate.response_status || "-")} | products ${formatNumber(candidate.product_count || 0)}</span>
+              </p>
+              ${candidate.error ? `<p><strong>Error</strong><span>${escapeHtml(candidate.error)}</span></p>` : ""}
+              ${samples.length ? `<ol>${samples.map((item) => `
+                <li>
+                  ${escapeHtml(item.title || item.item_name || item.name || "-")}
+                  <span>commission ${escapeHtml(item.commission_rate || 0)} | ${escapeHtml(item.campaign_status || "-")}</span>
+                </li>
+              `).join("")}</ol>` : `<p class="debug-empty">Belum ada sample produk dari endpoint ini.</p>`}
+            </article>
+          `;
+        }).join("")}
+      </div>` : ""}
+    </details>
   `;
 }
 
@@ -857,7 +895,8 @@ function renderOpportunityCard(item, index = 0) {
 
 function renderShopeeCard(item) {
   const manual = item.validationStatus === "manual-keyword" || String(item.item_id || "").startsWith("manual-shopee");
-  const realSearchProduct = item.validationStatus === "shopee-search-product" || item.validationStatus === "shopee-search-ams-product" || item.source === "Shopee Search" || item.source === "Shopee Search + AMS";
+  const affiliateProduct = item.validationStatus === "shopee-affiliate-open-api" || String(item.source || "").includes("Affiliate");
+  const realSearchProduct = affiliateProduct || item.validationStatus === "shopee-search-product" || item.validationStatus === "shopee-search-ams-product" || item.source === "Shopee Search" || item.source === "Shopee Search + AMS";
   const amsProduct = item.validationStatus === "shopee-ams-production" || item.source === "shopee-ams-production";
   const productName = item.item_name || item.name || "Produk Shopee";
   const commissionRate = Number(item.commission_rate ?? item.commissionRate ?? 0);
@@ -872,7 +911,7 @@ function renderShopeeCard(item) {
         <div class="card-topline">${renderBadge(item.label)}<span class="score-pill">${formatNumber(item.score)} score</span></div>
         <h3>${escapeHtml(productName)}</h3>
         <p class="price">${escapeHtml(amsProduct ? item.price || "Harga AMS belum tersedia" : manual ? "Validasi manual Shopee" : item.price || (item.sales ? `Sales ${formatCurrency(item.sales)}` : "Sales belum tersedia"))}</p>
-        <p class="meta">${escapeHtml(amsProduct ? `AMS Production - Komisi ${formatPercent(commissionRate)} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? `${sourceLabel} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
+        <p class="meta">${escapeHtml(amsProduct ? `AMS Production - Komisi ${formatPercent(commissionRate)} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : affiliateProduct ? `${sourceLabel} - ${item.affiliate_endpoint || "product offer"} - Komisi ${formatPercent(commissionRate)}` : manual ? item.reason || "Klik Cari di Shopee untuk cek produk." : realSearchProduct ? `${sourceLabel} - ${item.shop_name || item.shopName || "Nama toko belum tersedia"}` : `Estimasi komisi: ${formatCurrency(item.est_commission || 0)}`)}</p>
         ${(amsProduct || realSearchProduct) && !directProductUrl ? `<p class="meta link-fallback-note">Link produk belum tersedia, memakai pencarian Shopee</p>` : ""}
         ${renderStats(amsProduct ? [
           ["Item ID", item.item_id || "-"],
