@@ -6797,6 +6797,24 @@ body {
   margin: 8px 0 0;
 }
 
+.ams-debug-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ams-debug-list > strong {
+  color: #bae6fd;
+  font-size: 11px;
+}
+
+.ams-debug-list ol {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 18px;
+}
+
 .shopee-debug-details span,
 .debug-empty {
   color: #94a3b8;

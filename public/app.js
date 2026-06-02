@@ -611,6 +611,11 @@ function renderShopeeDebugPanel(panel) {
         <div><dt>Category</dt><dd>${escapeHtml(panel.category || "-")}</dd></div>
         <div><dt>Search Query</dt><dd>${escapeHtml(panel.search_query || "-")}</dd></div>
         <div><dt>Source Used</dt><dd>${escapeHtml(panel.source_used || "-")}</dd></div>
+        <div><dt>Final Source</dt><dd>${escapeHtml(panel.final_source_used || "-")}</dd></div>
+        <div><dt>Fallback</dt><dd>${panel.fallback_triggered ? "yes" : "no"}</dd></div>
+        <div><dt>AMS Candidates</dt><dd>${formatNumber(panel.ams_candidate_count || 0)}</dd></div>
+        <div><dt>AMS Raw</dt><dd>${formatNumber(panel.ams_raw_count || 0)}</dd></div>
+        <div><dt>AMS After Filter</dt><dd>${formatNumber(panel.ams_after_filter_count || 0)}</dd></div>
         <div><dt>Environment</dt><dd>${escapeHtml(panel.environment || "-")}</dd></div>
         <div><dt>Partner ID</dt><dd>${escapeHtml(panel.partner_id || "-")}</dd></div>
         <div><dt>Base URL</dt><dd>${escapeHtml(panel.base_url || "-")}</dd></div>
@@ -642,6 +647,7 @@ function renderShopeeDebugPanel(panel) {
           </div>
         </details>
       ` : ""}
+      ${renderAmsFilterDebug(panel)}
       ${panel.error ? `<p class="shopee-debug-error">${escapeHtml(panel.error)}</p>` : ""}
       <details class="shopee-debug-details shopee-debug-raw" open>
         <summary>Full Shopee Response Body</summary>
@@ -649,6 +655,31 @@ function renderShopeeDebugPanel(panel) {
         <pre>${escapeHtml(panel.full_response_body || "Response body kosong atau tidak diteruskan.")}</pre>
       </details>
     </article>
+  `;
+}
+
+function renderAmsFilterDebug(panel) {
+  const reasons = Array.isArray(panel.ams_filter_reasons) ? panel.ams_filter_reasons : [];
+  const titles = Array.isArray(panel.ams_first_10_titles) ? panel.ams_first_10_titles.filter(Boolean).slice(0, 10) : [];
+  const ranking = Array.isArray(panel.ams_ranking) ? panel.ams_ranking.slice(0, 10) : [];
+  if (!reasons.length && !titles.length && !ranking.length) return "";
+  return `
+    <details class="shopee-debug-details" open>
+      <summary>AMS Ranking & Filter Debug</summary>
+      ${titles.length ? `<div class="ams-debug-list"><strong>First 10 AMS Titles</strong><ol>${titles.map((title) => `<li>${escapeHtml(title)}</li>`).join("")}</ol></div>` : ""}
+      ${ranking.length ? `<div class="ams-debug-list"><strong>Top AMS Ranking</strong>${ranking.map((item) => `
+        <p>
+          <strong>${escapeHtml(item.title || "-")}</strong>
+          <span>commission ${escapeHtml(item.commission_rate || 0)} | status ${escapeHtml(item.campaign_status || "-")} | confidence ${formatNumber(item.confidence_score || 0)} | ${escapeHtml(item.reason || "-")}</span>
+        </p>
+      `).join("")}</div>` : ""}
+      ${reasons.length ? `<div class="ams-debug-list"><strong>AMS Filter Reasons</strong>${reasons.slice(0, 20).map((item) => `
+        <p>
+          <strong>${escapeHtml(item.item_name || "-")}</strong>
+          <span>confidence ${formatNumber(item.confidence_score || 0)} | ${escapeHtml(item.reason || "-")}</span>
+        </p>
+      `).join("")}</div>` : ""}
+    </details>
   `;
 }
 

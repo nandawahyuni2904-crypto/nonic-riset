@@ -75,6 +75,8 @@ module.exports = async function handler(req, res) {
     }).slice(0, SHOPEE_PRODUCT_LIMIT);
     const opportunities = buildOpportunities(shorts, products);
     const shopeeStats = buildShopeeStats(products);
+    const finalSourceUsed = resolveFinalShopeeSource(products);
+    const fallbackTriggered = Boolean(searchFailed && finalSourceUsed === "ams");
     const sourceUsed = resolveShopeeSourceUsed({
       searchItems: products.filter((item) => String(item.source || "").includes("Shopee Search")),
       amsItems: products.filter((item) => String(item.source || "").includes("AMS")),
@@ -85,7 +87,11 @@ module.exports = async function handler(req, res) {
       searchQuery: shopeeQuery,
       sourceUsed,
       searchDebug: searchResult.debug || {},
-      products
+      products,
+      amsResult,
+      amsRanking,
+      finalSourceUsed,
+      fallbackTriggered
     });
     const shopeeMessage = products.length
       ? "Shopee Ready."
@@ -121,6 +127,11 @@ module.exports = async function handler(req, res) {
         relevantItemCount: products.length,
         fallbackSearchUrl: amsRanking.fallbackSearchUrl,
         sourceUsed,
+        finalSourceUsed,
+        fallbackTriggered,
+        amsCandidateCount: amsResult.mappedItemCount || (amsResult.items || []).length || 0,
+        amsRawCount: amsResult.rawItemCount || 0,
+        amsAfterFilterCount: amsRanking.relevantCount || 0,
         minRating: SHOPEE_MIN_RATING,
         minReviews: SHOPEE_MIN_REVIEWS
       },
@@ -130,6 +141,11 @@ module.exports = async function handler(req, res) {
           ok: Boolean(amsResult.ok),
           shopee_query: shopeeQuery,
           source_used: sourceUsed,
+          final_source_used: finalSourceUsed,
+          fallback_triggered: fallbackTriggered,
+          ams_candidate_count: amsResult.mappedItemCount || (amsResult.items || []).length || 0,
+          ams_raw_count: amsResult.rawItemCount || 0,
+          ams_after_filter_count: amsRanking.relevantCount || 0,
           raw_count: (searchResult.debug?.raw_count || 0) + amsRanking.rawCount,
           filtered_count: products.length,
           min_rating: SHOPEE_MIN_RATING,
@@ -137,6 +153,7 @@ module.exports = async function handler(req, res) {
           shopee_raw_count: (searchResult.debug?.raw_count || 0) + amsRanking.rawCount,
           shopee_relevant_count: products.length,
           filtered_out_reason: amsRanking.filteredOutReason,
+          ams_filter_reasons: amsRanking.filteredOutReason,
           fallback_search_url: amsRanking.fallbackSearchUrl,
           terms: amsRanking.terms,
           search: searchResult.debug || {},
@@ -527,11 +544,19 @@ function mergeShopeeDiscoveryProducts(searchItems, amsItems, query) {
   return merged.sort((a, b) => Number(b.score || b.chance || 0) - Number(a.score || a.chance || 0));
 }
 
-function buildShopeeDebugPanel({ category, searchQuery, sourceUsed, searchDebug, products }) {
+function buildShopeeDebugPanel({ category, searchQuery, sourceUsed, searchDebug, products, amsResult = {}, amsRanking = {}, finalSourceUsed = "none", fallbackTriggered = false }) {
   return {
     category: category || "",
     search_query: searchQuery,
     source_used: sourceUsed,
+    final_source_used: finalSourceUsed,
+    fallback_triggered: Boolean(fallbackTriggered),
+    ams_candidate_count: amsResult.mappedItemCount || (amsResult.items || []).length || 0,
+    ams_raw_count: amsResult.rawItemCount || 0,
+    ams_after_filter_count: amsRanking.relevantCount || 0,
+    ams_filter_reasons: amsRanking.filteredOutReason || [],
+    ams_first_10_titles: amsRanking.debug?.first_10_ams_titles || [],
+    ams_ranking: amsRanking.debug?.ranking || [],
     request_endpoint: searchDebug.request_endpoint || searchDebug.endpoint || "",
     request_path: searchDebug.request_path || "",
     base_url: searchDebug.base_url || "",
@@ -549,6 +574,12 @@ function buildShopeeDebugPanel({ category, searchQuery, sourceUsed, searchDebug,
     normalized_count: searchDebug.normalized_count || 0,
     error: searchDebug.error || null
   };
+}
+
+function resolveFinalShopeeSource(products = []) {
+  if (products.some((item) => String(item.source || "").includes("AMS"))) return "ams";
+  if (products.some((item) => String(item.source || "").includes("Shopee Search"))) return "shopee_search";
+  return "none";
 }
 
 function resolveShopeeSourceUsed({ searchItems, amsItems, searchFailed }) {
