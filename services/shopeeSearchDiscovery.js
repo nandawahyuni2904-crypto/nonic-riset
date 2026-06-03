@@ -10,13 +10,14 @@ async function discoverShopeeProducts({
   query,
   terms = [],
   negativeTerms = [],
-  limit = 8,
+  limit = 20,
   minRating = DEFAULT_MIN_RATING,
   minReviews = DEFAULT_MIN_REVIEWS,
   disableFiltering = false
 } = {}) {
   const searchQuery = cleanText(query || terms[0] || "produk viral");
-  const endpoint = buildSearchUrl(searchQuery, Math.max(20, limit * 3));
+  const candidateTarget = Math.max(100, limit * 5);
+  const endpoint = buildSearchUrl(searchQuery, candidateTarget);
   const referer = `https://shopee.co.id/search?keyword=${encodeURIComponent(searchQuery)}`;
   const cookie = String(process.env.SHOPEE_SEARCH_COOKIE || process.env.SHOPEE_COOKIE || "").trim();
   const debug = {
@@ -31,7 +32,9 @@ async function discoverShopeeProducts({
     raw_count: 0,
     raw_search_count: 0,
     normalized_count: 0,
+    candidate_count: 0,
     filtered_count: 0,
+    top_20_count: 0,
     min_rating: minRating,
     min_reviews: minReviews,
     filtering_disabled: Boolean(disableFiltering),
@@ -66,27 +69,23 @@ async function discoverShopeeProducts({
     const normalized = rawItems.map(normalizeSearchItem).filter(Boolean);
     debug.normalized_count = normalized.length;
     debug.first_10_product_titles = normalized.slice(0, 10).map((item) => item.item_name || item.name || "");
-    const ranked = rankAndFilterProducts(normalized, { terms, negativeTerms, minRating, minReviews });
+    const ranked = scoreTrendingProducts(normalized, { terms, negativeTerms, minRating, minReviews });
+    debug.candidate_count = normalized.length;
     debug.filter_reasons = ranked.slice(0, Math.max(20, limit)).map((item) => ({
       title: item.item_name || item.name || "",
       rating: item.rating || 0,
       review_count: item.reviewCount || item.reviews || 0,
-      reason: item.filtered_reason || "would_pass_filter"
+      reason: item.filtered_reason || item.scoring_reason || "would_pass_filter"
     }));
     const strictItems = ranked.filter((item) => item.qualityPass);
-    const unfilteredItems = normalized.slice(0, limit).map((item, index) => ({
-      ...item,
-      score: item.score || Math.max(40, 90 - index * 2),
-      chance: item.chance || Math.max(40, 90 - index * 2),
-      label: index < 5 ? "HOT" : "GOOD",
-      filter_debug_note: "temporary_unfiltered_search_result"
-    }));
     const finalItems = disableFiltering
-      ? unfilteredItems
-      : (strictItems.length >= Math.min(limit, 4) ? strictItems : ranked).slice(0, limit);
+      ? ranked.slice(0, limit)
+      : (strictItems.length >= Math.min(limit, 4) ? strictItems : ranked.filter((item) => item.keyword_match_score >= 18)).slice(0, limit);
     debug.filtered_count = finalItems.length;
+    debug.top_20_count = finalItems.slice(0, 20).length;
     debug.strict_count = strictItems.length;
     debug.fallback_used = disableFiltering || strictItems.length < Math.min(limit, 4);
+    debug.scoring_reason = "trending_score = keyword_match*30 + rating_score*20 + review_score*15 + sold_velocity_score*25 + freshness_score*10. Mature products get a small penalty so 100k sold items do not always win.";
     debug.filtered_out_reason = ranked
       .filter((item) => !finalItems.includes(item))
       .slice(0, 8)
@@ -206,6 +205,8 @@ function normalizeSearchItem(raw) {
   const rating = roundRating(item.item_rating?.rating_star || item.rating_star || item.rating || 0);
   const reviewCount = extractReviewCount(item);
   const soldCount = Number(item.historical_sold || item.sold || item.monthly_sold || item.global_sold_count || 0) || 0;
+  const createdAt = normalizeTimestamp(item.ctime || item.created_time || item.create_time || item.item_creation_time || 0);
+  const updatedAt = normalizeTimestamp(item.updated_time || item.update_time || 0);
   if (!name || !itemId || !shopId) return null;
   const url = buildProductUrl(name, shopId, itemId);
   if (!isDirectProductUrl(url)) return null;
@@ -218,12 +219,18 @@ function normalizeSearchItem(raw) {
     shopid: shopId || "",
     item_name: name,
     name,
+    title: name,
     price,
     rating,
     reviewCount,
     reviews: reviewCount,
     soldCount,
+    sold: soldCount,
+    sold_count: soldCount,
     items_sold: soldCount,
+    created_at: createdAt,
+    updated_at: updatedAt,
+    freshness_days: createdAt ? Math.max(0, Math.round((Date.now() - createdAt) / 86400000)) : null,
     image_url: image,
     image,
     shop_name: cleanText(item.shop_name || item.shopname || item.shop_location || ""),
@@ -235,25 +242,50 @@ function normalizeSearchItem(raw) {
   };
 }
 
-function rankAndFilterProducts(products, { terms, negativeTerms, minRating, minReviews }) {
+function scoreTrendingProducts(products, { terms, negativeTerms, minRating, minReviews }) {
   const normalizedTerms = terms.map(normalizeForMatch).filter(Boolean);
   const normalizedNegative = negativeTerms.map(normalizeForMatch).filter(Boolean);
   return products.map((product) => {
     const text = normalizeForMatch(`${product.item_name} ${product.shop_name}`);
     const negativeMatches = normalizedNegative.filter((term) => text.includes(term));
     const positiveMatches = normalizedTerms.filter((term) => text.includes(term));
-    const keywordPass = !normalizedTerms.length || positiveMatches.length > 0;
+    const keywordMatchScore = scoreKeywordMatch({ text, productName: product.item_name, normalizedTerms, positiveMatches });
+    const keywordPass = !normalizedTerms.length || keywordMatchScore >= 18;
     const ratingPass = !product.rating || product.rating >= minRating;
-    const demandPass = Number(product.reviewCount || 0) >= minReviews || Number(product.soldCount || 0) >= minReviews;
+    const demandPass = Number(product.reviewCount || 0) >= Math.min(minReviews, 300) || Number(product.soldCount || 0) >= Math.min(minReviews, 300);
     const qualityPass = keywordPass && !negativeMatches.length && ratingPass && demandPass;
-    const score = positiveMatches.length * 30
-      + normalizeLog(product.soldCount, 5) * 35
-      + normalizeLog(product.reviewCount, 5) * 20
-      + (product.rating ? Math.min(15, product.rating * 3) : 0);
+    const ratingScore = scoreRating(product.rating);
+    const reviewScore = normalizeLog(product.reviewCount, 5) * 15;
+    const soldVelocityScore = scoreSoldVelocity(product.soldCount);
+    const freshnessScore = scoreFreshness(product.freshness_days);
+    const maturePenalty = scoreMaturityPenalty(product.soldCount, product.reviewCount);
+    const score = Math.max(0, Math.min(100, keywordMatchScore + ratingScore + reviewScore + soldVelocityScore + freshnessScore - maturePenalty));
+    const reason = buildTrendingReason({
+      positiveMatches,
+      keywordMatchScore,
+      ratingScore,
+      reviewScore,
+      soldVelocityScore,
+      freshnessScore,
+      maturePenalty,
+      product
+    });
     return {
       ...product,
       matched_terms: positiveMatches,
       qualityPass,
+      rank: 0,
+      keyword_match_score: Math.round(keywordMatchScore),
+      rating_score: Math.round(ratingScore),
+      review_score: Math.round(reviewScore),
+      sold_velocity_score: Math.round(soldVelocityScore),
+      freshness_score: Math.round(freshnessScore),
+      mature_penalty: Math.round(maturePenalty),
+      trending_score: Math.round(score),
+      popularity_signal: Math.round(soldVelocityScore + reviewScore + ratingScore),
+      trending_reason: reason,
+      scoring_reason: reason,
+      why_trending: reason,
       score: Math.round(score),
       chance: Math.round(score),
       label: score >= 80 ? "HOT" : score >= 60 ? "GOOD" : "LOW",
@@ -268,8 +300,66 @@ function rankAndFilterProducts(products, { terms, negativeTerms, minRating, minR
               : ""
     };
   })
-    .filter((item) => !item.filtered_reason || item.qualityPass || item.matched_terms.length)
-    .sort((a, b) => Number(b.qualityPass) - Number(a.qualityPass) || b.score - a.score || b.soldCount - a.soldCount || b.reviewCount - a.reviewCount);
+    .filter((item) => !item.filtered_reason || item.qualityPass || item.keyword_match_score >= 18)
+    .sort((a, b) => Number(b.qualityPass) - Number(a.qualityPass) || b.trending_score - a.trending_score || b.keyword_match_score - a.keyword_match_score || b.sold_velocity_score - a.sold_velocity_score)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+}
+
+function scoreKeywordMatch({ text, productName, normalizedTerms, positiveMatches }) {
+  if (!normalizedTerms.length) return 20;
+  const productText = normalizeForMatch(productName);
+  const exactPhrase = normalizedTerms.some((term) => term.length > 3 && productText.includes(term));
+  const wordHits = positiveMatches.length;
+  const ratio = wordHits / Math.max(1, normalizedTerms.length);
+  return Math.min(30, (exactPhrase ? 18 : 0) + ratio * 12 + Math.min(8, wordHits * 2) + (text.includes(normalizedTerms[0]) ? 4 : 0));
+}
+
+function scoreRating(value) {
+  const rating = Number(value || 0);
+  if (!rating) return 8;
+  if (rating >= 4.9) return 20;
+  if (rating >= 4.8) return 18;
+  if (rating >= 4.7) return 16;
+  if (rating >= 4.5) return 10;
+  return 4;
+}
+
+function scoreSoldVelocity(value) {
+  const sold = Number(value || 0);
+  if (!sold) return 4;
+  const base = normalizeLog(sold, 5) * 25;
+  const emergingBoost = sold >= 100 && sold <= 10000 ? 4 : 0;
+  return Math.min(25, base + emergingBoost);
+}
+
+function scoreFreshness(days) {
+  if (days === null || days === undefined) return 5;
+  const value = Number(days);
+  if (value <= 14) return 10;
+  if (value <= 30) return 8;
+  if (value <= 90) return 5;
+  return 2;
+}
+
+function scoreMaturityPenalty(soldCount, reviewCount) {
+  const sold = Number(soldCount || 0);
+  const reviews = Number(reviewCount || 0);
+  if (sold >= 100000 || reviews >= 50000) return 10;
+  if (sold >= 50000 || reviews >= 20000) return 6;
+  if (sold >= 20000 || reviews >= 10000) return 3;
+  return 0;
+}
+
+function buildTrendingReason({ positiveMatches, keywordMatchScore, ratingScore, reviewScore, soldVelocityScore, freshnessScore, maturePenalty, product }) {
+  const parts = [];
+  if (positiveMatches.length) parts.push(`keyword match kuat: ${positiveMatches.slice(0, 4).join(", ")}`);
+  if (ratingScore >= 16) parts.push(`rating bagus ${product.rating || "-"}`);
+  if (reviewScore >= 8) parts.push(`review cukup kuat ${product.reviewCount || 0}`);
+  if (soldVelocityScore >= 15) parts.push(`sinyal terjual naik ${product.soldCount || 0}`);
+  if (freshnessScore >= 8) parts.push("produk relatif baru");
+  if (maturePenalty) parts.push(`penalty mature -${Math.round(maturePenalty)}`);
+  if (!parts.length) parts.push(`score keyword ${Math.round(keywordMatchScore)} dengan popularity signal terbatas`);
+  return parts.join("; ");
 }
 
 function extractReviewCount(item) {
@@ -312,6 +402,13 @@ function isDirectProductUrl(url) {
 function roundRating(value) {
   const number = Number(value || 0);
   return Number.isFinite(number) ? Math.round(number * 10) / 10 : 0;
+}
+
+function normalizeTimestamp(value) {
+  const number = Number(value || 0);
+  if (!Number.isFinite(number) || number <= 0) return null;
+  const millis = number > 1000000000000 ? number : number * 1000;
+  return millis > 0 ? millis : null;
 }
 
 function cleanText(value) {
