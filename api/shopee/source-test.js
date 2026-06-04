@@ -224,18 +224,6 @@ function extractTitlesFromHtml(html) {
     const parsed = parseJson(nextDataMatch[1]);
     collectNamesDeep(parsed, titles);
   }
-  const regexes = [
-    /"name"\s*:\s*"([^"]{8,180})"/g,
-    /"item_name"\s*:\s*"([^"]{8,180})"/g,
-    /"title"\s*:\s*"([^"]{8,180})"/g
-  ];
-  regexes.forEach((regex) => {
-    let match;
-    while ((match = regex.exec(html)) !== null && titles.size < 80) {
-      const title = cleanText(unescapeJsonString(match[1]));
-      if (looksLikeProductTitle(title)) titles.add(title);
-    }
-  });
   return [...titles];
 }
 
@@ -243,15 +231,18 @@ function collectNamesDeep(value, titles) {
   if (!value || titles.size >= 80) return;
   if (Array.isArray(value)) return value.forEach((item) => collectNamesDeep(item, titles));
   if (typeof value !== "object") return;
+  const hasProductShape = Boolean(
+    value.itemid || value.item_id || value.shopid || value.shop_id || value.price || value.price_min || value.image || value.image_url
+  );
   const name = cleanText(value.name || value.item_name || value.title || "");
-  if (looksLikeProductTitle(name)) titles.add(name);
+  if (hasProductShape && looksLikeProductTitle(name)) titles.add(name);
   Object.values(value).forEach((item) => collectNamesDeep(item, titles));
 }
 
 function looksLikeProductTitle(value) {
   const text = cleanText(value);
   if (text.length < 8 || text.length > 180) return false;
-  if (/captcha|login|shopee|javascript|tracking|error/i.test(text)) return false;
+  if (/captcha|login|shopee|javascript|tracking|error|tanstack|react|query|webpack|chunk|module/i.test(text)) return false;
   return /[a-zA-Z0-9]/.test(text);
 }
 
@@ -307,14 +298,6 @@ function parseJson(value) {
     return JSON.parse(value);
   } catch {
     return null;
-  }
-}
-
-function unescapeJsonString(value) {
-  try {
-    return JSON.parse(`"${String(value).replace(/"/g, '\\"')}"`);
-  } catch {
-    return value;
   }
 }
 
