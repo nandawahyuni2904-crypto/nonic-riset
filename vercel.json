@@ -16,10 +16,6 @@
       "dest": "/api/research.js"
     },
     {
-      "src": "/api/debug/routes",
-      "dest": "/api/debug-routes.js"
-    },
-    {
       "src": "/api/(.*)",
       "dest": "/api/$1.js"
     },
