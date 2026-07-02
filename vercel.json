@@ -16,6 +16,10 @@
       "dest": "/api/research.js"
     },
     {
+      "src": "/api/shopee/ams-official-probe",
+      "dest": "/api/shopee/ams-official-probe.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1.js"
     },
