@@ -43,7 +43,7 @@ const OFFICIAL_AMS_ENDPOINTS = [
   }
 ];
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ error: "Method not allowed" });
@@ -79,7 +79,7 @@ module.exports = async function handler(req, res) {
   }
 
   return res.status(200).json({ results });
-};
+}
 
 async function probeEndpoint({ endpoint, config, tokenInfo }) {
   const request = buildSignedGetRequest({
@@ -302,3 +302,6 @@ function parseJson(value) {
     return null;
   }
 }
+
+module.exports = handler;
+module.exports.default = handler;
